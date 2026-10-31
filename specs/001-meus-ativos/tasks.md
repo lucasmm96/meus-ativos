@@ -31,15 +31,17 @@ A integração é feita pelo gerenciador após a conclusão de todas as trilhas.
 2. Configurar GitHub Action (cron diário) para rodar o script e fazer o upsert no Neon (usando DATABASE_URL via secret).
 
 ## Trilha D — Design System e Componentes (ui-agent)
-**Arquivos:** `src/components/**`, `tailwind.config.ts`, `src/index.css`.
+**Arquivos:** `src/components/**`, `tailwind.config.ts`, `src/index.css`, `public/**`, `index.html`.
 **Tarefas:**
-1. Configurar tokens de cores (Verde Ações, Azul FIIs, Dark Mode).
-2. Criar componentes primitivos: `Button`, `Input`, `Card`, `OfflineBanner`.
+1. Configurar tokens de cores (Verde Ações, Azul FIIs, Dark Mode) usando as definições do arquivo `.ai/design/stitch-design.md`.
+2. **Branding:** Copiar os 4 arquivos de ícone da pasta `.ai/design/assets/` para a pasta `public/` na raiz do projeto. Adicionar as tags `<link>` no `index.html`.
+3. Criar componentes primitivos: `Button`, `Input`, `Card`, `OfflineBanner`.
 
 ## Trilha E — Páginas, Rotas e Gráficos (page-agent)
-**Arquivos:** `src/routes/**`, `src/App.tsx`, `src/components/charts/**`.
+**Arquivos:** `src/routes/**`, `src/App.tsx`, `src/components/charts/**`, `vite.config.ts`.
 **Tarefas:**
-1. Configurar React Router v6.
+0. **Referência Visual:** Usar os arquivos `.ai/design/login.html`, `dashboard.html` e `transactions.html` como base estrutural e de classes Tailwind. *Atenção: ignore completamente as tags `<script>` desses arquivos, são apenas protótipos.*
+1. Configurar React Router v6 e configurar o `vite-plugin-pwa` no `vite.config.ts` apontando para os ícones da pasta `public/` (conforme brief 10).
 2. Criar telas de Login e Cadastro (integradas ao Neon Auth).
 3. Criar Dashboard com os 6 gráficos (Recharts) e cards de resumo.
 4. Criar tela de transações (CRUD) e botão de arquivamento.
