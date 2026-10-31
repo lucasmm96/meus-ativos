@@ -16,3 +16,11 @@
 ## Componentes Obrigatórios
 - `OfflineBanner`: Barra fixa no topo, fundo `bg-error`, texto branco: "Você está offline. Conecte-se para visualizar os dados."
 - `ChartCard`: Container com `bg-surface`, padding, borda arredondada (`rounded-lg`).
+
+## BRANDING / LOGO & FAVICONS
+- Os ícones oficiais do app já estão gerados e armazenados em `.ai/design/assets/` (`favicon.svg`, `apple-touch-icon.png`, `pwa-192x192.png`, `pwa-512x512.png`).
+- Quando iniciar a Trilha de UI (D/E):
+  1. Crie a pasta `public/` na raiz do projeto.
+  2. Copie os 4 arquivos de `.ai/design/assets/` para `public/`.
+  3. No `index.html`, adicione as tags `<link>` para o favicon e apple-touch-icon.
+  4. Use o `<img src="/favicon.svg" />` no cabeçalho (Header) das telas, conforme o layout do Stitch.
