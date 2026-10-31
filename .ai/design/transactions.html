@@ -1,0 +1,590 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#131313;color:#e5e2e1;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,16px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-container": "#1c4500", "on-error": "#690005", "on-background": "#e5e2e1", "surface": "#131313", "inverse-surface": "#e5e2e1", "outline": "#8a9480", "on-tertiary-fixed": "#400013", "surface-container": "#201f1f", "on-secondary-fixed": "#001a41", "inverse-on-surface": "#313030", "secondary-container": "#0162cf", "secondary-fixed-dim": "#adc6ff", "surface-container-highest": "#353534", "surface-container-lowest": "#0e0e0e", "surface-container-low": "#1c1b1b", "error-container": "#93000a", "surface-container-high": "#2a2a2a", "surface-bright": "#393939", "secondary": "#adc6ff", "on-surface-variant": "#c0cab4", "on-error-container": "#ffdad6", "tertiary-container": "#f68598", "background": "#131313", "tertiary": "#ffb2bc", "outline-variant": "#414939", "tertiary-fixed": "#ffd9dd", "primary-fixed-dim": "#8adb58", "primary-fixed": "#a5f871", "primary-container": "#6cba3b", "on-primary": "#153800", "on-primary-fixed-variant": "#225100", "inverse-primary": "#2f6c00", "tertiary-fixed-dim": "#ffb2bc", "on-secondary-container": "#dae4ff", "surface-variant": "#353534", "on-secondary": "#002e69", "error": "#ffb4ab", "primary": "#8adb58", "secondary-fixed": "#d8e2ff", "on-surface": "#e5e2e1", "surface-dim": "#131313", "on-primary-fixed": "#092100", "on-tertiary-fixed-variant": "#7e273b", "surface-tint": "#8adb58", "on-tertiary-container": "#711d31", "on-secondary-fixed-variant": "#004494", "on-tertiary": "#600f26" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-mobile": "0.75rem", "margin-desktop": "2rem", "space-md": "1rem", "margin": "1rem", "margin-mobile": "1rem", "space-lg": "1.5rem", "gutter": "1rem", "space-xs": "0.25rem", "space-xl": "2rem", "space-sm": "0.5rem" }, "fontFamily": { "label-md": ["Inter"], "financial-numeric": ["Inter"], "label-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Playfair Display"], "display-lg": ["Playfair Display"], "headline-sm": ["Playfair Display"], "display-lg-mobile": ["Playfair Display"], "label-sm": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Playfair Display"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500" }], "financial-numeric": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" }], "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "500" }], "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="InvestPWA Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Vew4ZQObhsnAaMnGp0oseRtj8RKzHUQeqwZU37RBN8G5hUyZw7bpm1kUjvKCMPp5B8IzCduW-x_F_GTvEFGUfzJrGTwgJ0JDwYmSQ2wiu3GXJLHAIoXjIuANroXzP6CuaX0Y8_X-xHTCvXu-71YDK8QSFhGxtLmeCnS29tbCq72dlVy-HdOiuNZXm5d4kQr4IjsKE9mwTNL7IMIQfdVKQ3dKH7rsqDIn9aVfC7yhs"><div class="flex flex-col"><span class="font-label-md text-label-md text-primary leading-none uppercase tracking-wider">meus ativos</span><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Histórico De Transações</span></div></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-surface"><div class="flex flex-col w-full px-space-md space-y-space-md">
+<!-- Micro Banner Status / Info -->
+<div class="flex items-center justify-between px-space-md py-space-sm rounded-xl bg-surface-container shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: &quot;FILL&quot; 1;">sync</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Custódia B3 Atualizada</span>
+</div>
+<span class="font-financial-numeric text-label-sm text-on-surface">Hoje, 17:42</span>
+</div>
+<!-- Ações de Cabeçalho / Controle Superior -->
+<div class="flex items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface">Gestão de Ordens</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Lançamentos de compra e histórico patrimonial</p>
+</div>
+<!-- Botão Rápido de Arquivar / Gestão de Inativos -->
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-container-high active:bg-surface-container-highest transition-colors text-tertiary" id="btn-toggle-archived-filter">
+<span class="material-symbols-outlined text-[18px]">inventory_2</span>
+<span class="font-label-md text-label-md">Arquivar</span>
+</button>
+</div>
+<!-- Card Destacado: Nova Compra (Formulário Integrado) -->
+<section class="bg-surface-container rounded-xl p-space-md shadow-md flex flex-col space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Nova Compra</span>
+</div>
+</div>
+<form class="space-y-space-sm" id="trade-form">
+<!-- Seletor de Ativo Categorizado -->
+<div class="flex flex-col space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant" for="asset-select">Ativo (Código B3)</label>
+<div class="relative w-full">
+<select class="w-full h-12 bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-xl px-space-md appearance-none outline-none focus:bg-surface-container-high transition-colors" id="asset-select"><option data-suggested="10.25" data-type="Ação" selected="" value="ITSA4F">[Ação] ITSA4F — Itaúsa PN Fracionário</option>
+<option data-suggested="4.60" data-type="Ação" value="KLBN4F">[Ação] KLBN4F — Klabin PN Fracionário</option>
+<option data-suggested="11.80" data-type="Ação" value="CMIG4F">[Ação] CMIG4F — Cemig PN Fracionário</option>
+<option data-suggested="112.00" data-type="FII" value="XPML11">[FII] XPML11 — XP Malls FII</option>
+<option data-suggested="10.65" data-type="FII" value="MXRF11">[FII] MXRF11 — Maxi Renda FII</option>
+<option data-suggested="9.85" data-type="FII" value="VGIR11">[FII] VGIR11 — Valora RE III FII</option></select>
+<span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<!-- Data da Execução -->
+<div class="flex flex-col space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant" for="trade-date">Data do Pregão</label>
+<div class="relative">
+<input class="w-full h-12 bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-xl px-space-md outline-none focus:bg-surface-container-high transition-colors" id="trade-date" maxlength="10" placeholder="DD/MM/AAAA" type="text" value="24/10/2023">
+<span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[20px]">calendar_today</span>
+</div>
+</div>
+<!-- Grid de Quantidade e Preço Unitário -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="flex flex-col space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant" for="input-qty">Quantidade</label>
+<div class="relative">
+<input class="w-full h-12 bg-surface-container-lowest text-on-surface font-financial-numeric text-financial-numeric rounded-xl px-space-md outline-none focus:bg-surface-container-high transition-colors" id="input-qty" inputmode="numeric" min="1" placeholder="100" step="1" type="number" value="150">
+<span class="absolute right-3 top-3.5 font-label-sm text-label-sm text-on-surface-variant pointer-events-none">un</span>
+</div>
+</div>
+<div class="flex flex-col space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant" for="input-price">Preço Unit. (R$)</label>
+<input class="w-full h-12 bg-surface-container-lowest text-on-surface font-financial-numeric text-financial-numeric rounded-xl px-space-md outline-none focus:bg-surface-container-high transition-colors" id="input-price" inputmode="decimal" min="0.01" placeholder="34,50" step="0.01" type="number" value="10.25">
+</div>
+</div>
+<!-- Bloco de Cálculo Dinâmico do Total -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md flex items-center justify-between mt-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Estimado</span>
+<span class="font-label-md text-label-md text-outline">Líquido sem taxas B3</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-label-md text-label-md text-primary font-bold">R$</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight" id="display-total">1.537,50</span>
+</div>
+</div>
+<!-- Botão Primário Adicionar Compra -->
+<button class="w-full h-12 bg-primary hover:bg-primary-fixed-dim active:bg-primary-fixed text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all transform active:scale-[0.99] mt-2" type="submit">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+        Confirmar Compra
+      </button>
+</form>
+</section>
+<!-- Seção Histórico com Filtros em Chips -->
+<section class="flex flex-col space-y-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Histórico de Compras</h3>
+</div>
+<!-- Chips de Filtragem Rápida -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 scrollbar-none">
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container-highest text-on-surface font-semibold flex items-center gap-1.5 transition-colors" data-filter="all">
+<span class="">Todos</span>
+</button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors" data-filter="Ação">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="">Ações</span>
+</button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:text-on-surface flex items-center gap-1.5 transition-colors" data-filter="FII">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="">FIIs</span>
+</button>
+<button class="filter-chip px-3.5 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant hover:text-tertiary flex items-center gap-1.5 transition-colors" data-filter="archived">
+<span class="material-symbols-outlined text-[14px]">archive</span>
+<span class="">Arquivados</span>
+</button>
+</div>
+<!-- Lista de Itens do Histórico -->
+<div class="space-y-space-sm" id="transactions-list"><!-- Item 1: ITSA4F -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="Ação">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-primary">
+        IT
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">ITSA4F</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-label-sm text-label-sm font-semibold">Ação</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">150 ações • R$ 10,25</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 1.537,50</span>
+<span class="font-label-sm text-label-sm text-outline">24/10/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • XP Investimentos
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors" title="Arquivar posição encerrada">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article>
+<!-- Item 2: XPML11 -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="FII">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-secondary">
+        XP
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">XPML11</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">FII</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">20 cotas • R$ 112,00</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 2.240,00</span>
+<span class="font-label-sm text-label-sm text-outline">18/10/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • BTG Pactual
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article>
+<!-- Item 3: KLBN4F -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="Ação">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-primary">
+        KL
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">KLBN4F</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-label-sm text-label-sm font-semibold">Ação</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">200 ações • R$ 4,60</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 920,00</span>
+<span class="font-label-sm text-label-sm text-outline">12/10/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • Clear Corretora
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article>
+<!-- Item 4: MXRF11 -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="FII">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-secondary">
+        MX
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">MXRF11</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">FII</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">300 cotas • R$ 10,65</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 3.195,00</span>
+<span class="font-label-sm text-label-sm text-outline">05/10/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • Itaú Corretora
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article>
+<!-- Item 5: CMIG4F -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="Ação">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-primary">
+        CM
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">CMIG4F</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-label-sm text-label-sm font-semibold">Ação</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">80 ações • R$ 11,80</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 944,00</span>
+<span class="font-label-sm text-label-sm text-outline">28/09/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • Toro Investimentos
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article>
+<!-- Item 6: VGIR11 -->
+<article class="transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200" data-archived="false" data-category="FII">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold text-secondary">
+        VG
+      </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">VGIR11</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">FII</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">100 cotas • R$ 9,85</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ 985,00</span>
+<span class="font-label-sm text-label-sm text-outline">20/09/2023</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+      Executada • Nubank / NuInvest
+    </span>
+<div class="flex items-center gap-1">
+<button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">info</span>
+        Detalhes
+      </button>
+<button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">inventory_2</span>
+        Arquivar
+      </button>
+</div>
+</div>
+</article></div>
+</section>
+<!-- Empty State Dinâmico para Arquivados ou Filtro Sem Resultados -->
+<div class="hidden flex-col items-center justify-center p-space-lg text-center space-y-space-sm bg-surface-container rounded-xl" id="empty-state">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-outline">
+<span class="material-symbols-outlined text-[24px]">folder_off</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Nenhuma ordem encontrada</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">Não há lançamentos cadastrados para os filtros selecionados.</p>
+</div>
+<!-- Floating Action Button (FAB) verde fixado no canto inferior -->
+<button aria-label="Adicionar Nova Compra" class="fixed right-4 bottom-20 z-40 w-14 h-14 rounded-full bg-primary hover:bg-primary-fixed text-on-primary shadow-xl flex items-center justify-center transition-transform active:scale-95 focus:outline-none" id="fab-add-trade">
+<span class="material-symbols-outlined text-[30px]" style="font-variation-settings: &quot;wght&quot; 600;">add</span>
+</button>
+<!-- Modal / Bottom Sheet Simulado de Detalhes -->
+<div class="fixed inset-0 z-50 bg-surface-container-lowest/80 backdrop-blur-md hidden flex-col justify-end" id="details-modal">
+<div class="w-full bg-surface-container-high rounded-t-2xl p-space-md space-y-space-md shadow-2xl">
+<div class="w-10 h-1 bg-surface-container-highest rounded-full mx-auto"></div>
+<div class="flex items-center justify-between">
+<h4 class="font-headline-md text-headline-md text-on-surface" id="modal-ticker">Detalhes da Ordem</h4>
+<button class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface-variant" id="close-modal">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="space-y-space-sm py-2">
+<div class="flex justify-between py-1 bg-surface-container rounded-lg px-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tipo de Liquidação</span>
+<span class="font-financial-numeric text-label-md text-on-surface">D+2 Padrão B3</span>
+</div>
+<div class="flex justify-between py-1 bg-surface-container rounded-lg px-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Custos Operacionais</span>
+<span class="font-financial-numeric text-label-md text-primary">R$ 0,00 (Isento)</span>
+</div>
+<div class="flex justify-between py-1 bg-surface-container rounded-lg px-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Status da Custódia</span>
+<span class="font-financial-numeric text-label-md text-primary">Efetivada</span>
+</div>
+</div>
+<button class="w-full h-12 bg-surface-container-highest text-on-surface font-label-lg text-label-lg rounded-xl" id="btn-modal-done">Fechar</button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Referências DOM
+    const qtyInput = document.getElementById('input-qty');
+    const priceInput = document.getElementById('input-price');
+    const totalDisplay = document.getElementById('display-total');
+    const assetSelect = document.getElementById('asset-select');
+    const tradeForm = document.getElementById('trade-form');
+    const transactionsList = document.getElementById('transactions-list');
+    const historyCounter = document.getElementById('history-counter');
+    const emptyState = document.getElementById('empty-state');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const btnToggleArchived = document.getElementById('btn-toggle-archived-filter');
+    const fabAdd = document.getElementById('fab-add-trade');
+    const detailsModal = document.getElementById('details-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const btnModalDone = document.getElementById('btn-modal-done');
+    const modalTicker = document.getElementById('modal-ticker');
+
+    let currentFilter = 'all';
+
+    // Cálculo em tempo real do Total Estimado
+    function calculateTotal() {
+      const q = parseFloat(qtyInput.value) || 0;
+      const p = parseFloat(priceInput.value) || 0;
+      const total = q * p;
+      totalDisplay.textContent = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    qtyInput.addEventListener('input', calculateTotal);
+    priceInput.addEventListener('input', calculateTotal);
+
+    // Ajuste de preço sugerido ao mudar o ativo
+    assetSelect.addEventListener('change', (e) => {
+      const selected = e.target.options[e.target.selectedIndex];
+      const suggested = selected.getAttribute('data-suggested');
+      if (suggested) {
+        priceInput.value = suggested;
+        calculateTotal();
+      }
+    });
+
+    // Submissão de Nova Compra (Adição dinâmica)
+    tradeForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const selected = assetSelect.options[assetSelect.selectedIndex];
+      const ticker = selected.value;
+      const cat = selected.getAttribute('data-type') || 'Ação';
+      const qty = parseInt(qtyInput.value, 10) || 1;
+      const price = parseFloat(priceInput.value) || 0;
+      const total = qty * price;
+      const dateVal = document.getElementById('trade-date').value || '2023-10-24';
+      const dateParts = dateVal.split('-');
+      const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+      const prefix = ticker.substring(0, 2);
+
+      const isAcao = cat === 'Ação';
+      const tagBg = isAcao ? 'bg-primary/15 text-primary' : 'bg-secondary-container/20 text-secondary';
+      const avatarColor = isAcao ? 'text-primary' : 'text-secondary';
+
+      const card = document.createElement('article');
+      card.setAttribute('data-category', cat);
+      card.setAttribute('data-archived', 'false');
+      card.className = 'transaction-card bg-surface-container rounded-xl p-space-md shadow-sm flex flex-col space-y-space-sm transition-all duration-200';
+      card.innerHTML = `
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-space-sm">
+            <div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center font-label-lg text-label-lg font-bold ${avatarColor}">
+              ${prefix}
+            </div>
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="font-headline-sm text-headline-sm text-on-surface">${ticker}</span>
+                <span class="px-2 py-0.5 rounded-full ${tagBg} font-label-sm text-label-sm font-semibold">${cat}</span>
+              </div>
+              <span class="font-body-sm text-body-sm text-on-surface-variant">${qty} ${isAcao ? 'ações' : 'cotas'} &bull; R$ ${price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="font-financial-numeric text-financial-numeric text-on-surface font-semibold">R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span class="font-label-sm text-label-sm text-outline">${formattedDate}</span>
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+            Executada &bull; Recém Adicionada
+          </span>
+          <div class="flex items-center gap-1">
+            <button class="action-details px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">info</span>
+              Detalhes
+            </button>
+            <button class="action-archive px-2.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-tertiary font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[14px]">inventory_2</span>
+              Arquivar
+            </button>
+          </div>
+        </div>
+      `;
+
+      transactionsList.prepend(card);
+      applyFilter(currentFilter);
+
+      // Feedback suave
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    // Filtros de Lista
+    function applyFilter(filter) {
+      currentFilter = filter;
+      const cards = transactionsList.querySelectorAll('.transaction-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        const isArchived = card.getAttribute('data-archived') === 'true';
+
+        let show = false;
+        if (filter === 'all') {
+          show = !isArchived;
+        } else if (filter === 'archived') {
+          show = isArchived;
+        } else {
+          show = (cat === filter) && !isArchived;
+        }
+
+        if (show) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      historyCounter.textContent = `${visibleCount} registro${visibleCount !== 1 ? 's' : ''}`;
+      if (visibleCount === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+      } else {
+        emptyState.classList.add('hidden');
+        emptyState.classList.remove('flex');
+      }
+
+      // Atualiza estilo dos chips
+      filterChips.forEach(chip => {
+        const chipType = chip.getAttribute('data-filter');
+        if (chipType === filter) {
+          chip.classList.add('bg-surface-container-highest', 'text-on-surface', 'font-semibold');
+          chip.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        } else {
+          chip.classList.remove('bg-surface-container-highest', 'text-on-surface', 'font-semibold');
+          chip.classList.add('bg-surface-container', 'text-on-surface-variant');
+        }
+      });
+    }
+
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        applyFilter(chip.getAttribute('data-filter'));
+      });
+    });
+
+    btnToggleArchived.addEventListener('click', () => {
+      applyFilter(currentFilter === 'archived' ? 'all' : 'archived');
+    });
+
+    // Interações em cards de transação (Event Delegation)
+    transactionsList.addEventListener('click', (e) => {
+      const archiveBtn = e.target.closest('.action-archive');
+      if (archiveBtn) {
+        const card = archiveBtn.closest('.transaction-card');
+        const isCurrentlyArchived = card.getAttribute('data-archived') === 'true';
+        card.setAttribute('data-archived', !isCurrentlyArchived);
+
+        archiveBtn.innerHTML = !isCurrentlyArchived
+          ? '<span class="material-symbols-outlined text-[14px]">unarchive</span> Desarquivar'
+          : '<span class="material-symbols-outlined text-[14px]">inventory_2</span> Arquivar';
+
+        applyFilter(currentFilter);
+        return;
+      }
+
+      const detailsBtn = e.target.closest('.action-details');
+      if (detailsBtn) {
+        const card = detailsBtn.closest('.transaction-card');
+        const ticker = card.querySelector('h2, span.font-headline-sm').textContent;
+        modalTicker.textContent = `Ordem: ${ticker}`;
+        detailsModal.classList.remove('hidden');
+        detailsModal.classList.add('flex');
+      }
+    });
+
+    // Controle do Modal
+    const closeModal = () => {
+      detailsModal.classList.add('hidden');
+      detailsModal.classList.remove('flex');
+    };
+    closeModalBtn.addEventListener('click', closeModal);
+    btnModalDone.addEventListener('click', closeModal);
+
+    // FAB scroll para o formulário
+    fabAdd.addEventListener('click', () => {
+      tradeForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      qtyInput.focus();
+    });
+
+    calculateTotal();
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.3)]" data-active-classes="text-primary"><div class="flex justify-around items-center h-16 px-space-sm"><a class="flex flex-col items-center justify-center w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard-principal" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-label-sm mt-0.5">Início</span></a><a class="flex flex-col items-center justify-center w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="historico-de-transacoes" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="font-label-sm text-label-sm mt-0.5">Ordens</span></a><a class="flex flex-col items-center justify-center w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil-da-conta" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-sm text-label-sm mt-0.5">Conta</span></a></div></nav>
+
+</body></html>

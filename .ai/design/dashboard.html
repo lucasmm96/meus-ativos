@@ -1,0 +1,411 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#131313;color:#e5e2e1;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,16px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-container": "#1c4500", "on-error": "#690005", "on-background": "#e5e2e1", "surface": "#131313", "inverse-surface": "#e5e2e1", "outline": "#8a9480", "on-tertiary-fixed": "#400013", "surface-container": "#201f1f", "on-secondary-fixed": "#001a41", "inverse-on-surface": "#313030", "secondary-container": "#0162cf", "secondary-fixed-dim": "#adc6ff", "surface-container-highest": "#353534", "surface-container-lowest": "#0e0e0e", "surface-container-low": "#1c1b1b", "error-container": "#93000a", "surface-container-high": "#2a2a2a", "surface-bright": "#393939", "secondary": "#adc6ff", "on-surface-variant": "#c0cab4", "on-error-container": "#ffdad6", "tertiary-container": "#f68598", "background": "#131313", "tertiary": "#ffb2bc", "outline-variant": "#414939", "tertiary-fixed": "#ffd9dd", "primary-fixed-dim": "#8adb58", "primary-fixed": "#a5f871", "primary-container": "#6cba3b", "on-primary": "#153800", "on-primary-fixed-variant": "#225100", "inverse-primary": "#2f6c00", "tertiary-fixed-dim": "#ffb2bc", "on-secondary-container": "#dae4ff", "surface-variant": "#353534", "on-secondary": "#002e69", "error": "#ffb4ab", "primary": "#8adb58", "secondary-fixed": "#d8e2ff", "on-surface": "#e5e2e1", "surface-dim": "#131313", "on-primary-fixed": "#092100", "on-tertiary-fixed-variant": "#7e273b", "surface-tint": "#8adb58", "on-tertiary-container": "#711d31", "on-secondary-fixed-variant": "#004494", "on-tertiary": "#600f26" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-mobile": "0.75rem", "margin-desktop": "2rem", "space-md": "1rem", "margin": "1rem", "margin-mobile": "1rem", "space-lg": "1.5rem", "gutter": "1rem", "space-xs": "0.25rem", "space-xl": "2rem", "space-sm": "0.5rem" }, "fontFamily": { "label-md": ["Inter"], "financial-numeric": ["Inter"], "label-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Playfair Display"], "display-lg": ["Playfair Display"], "headline-sm": ["Playfair Display"], "display-lg-mobile": ["Playfair Display"], "label-sm": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Playfair Display"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.03em", "fontWeight": "500" }], "financial-numeric": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "500" }], "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "500" }], "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="InvestPWA Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1Vew4ZQObhsnAaMnGp0oseRtj8RKzHUQeqwZU37RBN8G5hUyZw7bpm1kUjvKCMPp5B8IzCduW-x_F_GTvEFGUfzJrGTwgJ0JDwYmSQ2wiu3GXJLHAIoXjIuANroXzP6CuaX0Y8_X-xHTCvXu-71YDK8QSFhGxtLmeCnS29tbCq72dlVy-HdOiuNZXm5d4kQr4IjsKE9mwTNL7IMIQfdVKQ3dKH7rsqDIn9aVfC7yhs"><div class="flex flex-col"><span class="font-label-md text-label-md text-primary leading-none uppercase tracking-wider">Meus ativos</span><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Dashboard Principal</span></div></div><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-28 bg-surface"><div class="flex flex-col w-full">
+<!-- Offline Sync Alert Banner -->
+<!-- Interactive Filter Tabs -->
+<section class="px-space-md py-space-xs flex items-center gap-2 overflow-x-auto">
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-1.5 transition-all bg-surface-container-high text-on-surface shadow-sm" id="btn-filter-all">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+      Consolidado
+    </button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-1.5 transition-all bg-surface-container text-on-surface-variant hover:text-on-surface" id="btn-filter-acoes">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+      Ações (58%)
+    </button>
+<button class="px-3.5 py-1.5 rounded-full font-label-md text-label-md flex items-center gap-1.5 transition-all bg-surface-container text-on-surface-variant hover:text-on-surface" id="btn-filter-fiis">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container"></span>
+      FIIs (42%)
+    </button>
+<button class="px-2.5 py-1.5 rounded-full font-label-sm text-label-sm text-on-surface-variant bg-surface-container flex items-center">
+<span class="material-symbols-outlined text-[16px]">tune</span>
+</button>
+</section>
+<!-- Top Metrics: Summary Bento Cards -->
+<section class="px-space-md py-space-sm flex flex-col gap-3">
+<!-- Hero Consolidation Card -->
+<div class="rounded-xl bg-surface-container p-4 relative overflow-hidden shadow-lg transition-transform active:scale-[0.99]">
+<div class="absolute -right-6 -bottom-6 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Patrimônio Consolidado</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">R$</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-semibold tracking-tight">83.470,00</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-container/20 text-primary-fixed font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+            +8.9% total
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Atualizado há 14m</span>
+</div>
+</div>
+<!-- Mini Portfolio Visual Bar -->
+<div class="mt-4 flex flex-col gap-1.5">
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden flex">
+<div class="h-full bg-primary-container transition-all duration-500" style="width: 58%;"></div>
+<div class="h-full bg-secondary-container transition-all duration-500" style="width: 42%;"></div>
+</div>
+<div class="flex justify-between items-center font-label-sm text-label-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span> Ações R$ 48.650</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary-container inline-block"></span> FIIs R$ 34.820</span>
+</div>
+</div>
+</div>
+<!-- 2 Sub Cards (Ações vs FIIs) -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Card 1: Ações -->
+<div class="rounded-xl bg-surface-container p-3.5 flex flex-col justify-between shadow-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container shadow-[0_0_8px_rgba(108,186,59,0.6)]"></div>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase font-medium">Ações</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[18px]">show_chart</span>
+</div>
+<div class="my-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total alocado</span>
+<p class="font-financial-numeric text-financial-numeric text-on-surface font-semibold truncate">R$ 48.650,00</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-fixed font-label-sm text-label-sm font-semibold">
+            +12.4% mês
+          </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1.250 c.</span>
+</div>
+</div>
+<!-- Card 2: FIIs -->
+<div class="rounded-xl bg-surface-container p-3.5 flex flex-col justify-between shadow-md relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="w-2.5 h-2.5 rounded-full bg-secondary-container shadow-[0_0_8px_rgba(1,98,207,0.6)]"></div>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase font-medium">FIIs</span>
+</div>
+<span class="material-symbols-outlined text-secondary-container text-[18px]">domain</span>
+</div>
+<div class="my-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total alocado</span>
+<p class="font-financial-numeric text-financial-numeric text-on-surface font-semibold truncate">R$ 34.820,00</p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">380 c.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Editorial Section Divider -->
+<div class="px-space-md pt-space-md pb-space-xs flex items-center justify-between">
+<div class="flex items-baseline gap-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Alocação Analítica</h2>
+<span class="font-label-sm text-label-sm text-primary">tempo real</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 visões táticas</span>
+</div>
+<!-- Detailed Charts 2x2 Bento Mobile -->
+<section class="px-space-md py-space-xs flex flex-col gap-4">
+<!-- Row 1: The Two Donut / Proportions -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Chart 1: Proporção em R$ (Donut) -->
+<div class="rounded-xl bg-surface-container p-4 shadow-md flex flex-col">
+<div class="flex items-center justify-between mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Proporção em R$</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Volume financeiro por classe</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm text-on-surface">Financeiro</span>
+</div>
+<div class="relative flex items-center justify-center my-3">
+<svg class="w-36 h-36 transform -rotate-90" viewBox="0 0 160 160">
+<!-- Background Ring -->
+<circle class="text-surface-container-highest" cx="80" cy="80" fill="none" r="58" stroke="currentColor" stroke-width="18"></circle>
+<!-- FIIs Segment (42% of 364.4 = 153.0) -->
+<circle cx="80" cy="80" fill="none" r="58" stroke="#4285F4" stroke-dasharray="153.0 364.4" stroke-dashoffset="0" stroke-linecap="round" stroke-width="18"></circle>
+<!-- Ações Segment (58% of 364.4 = 211.3) -->
+<circle cx="80" cy="80" fill="none" r="58" stroke="#6cba3b" stroke-dasharray="211.3 364.4" stroke-dashoffset="-153.0" stroke-linecap="round" stroke-width="18"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">58%</span>
+<span class="font-label-sm text-label-sm text-primary-fixed">Ações</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2 bg-surface-container-lowest/50 p-2.5 rounded-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">Ações (58%)</span>
+</div>
+<span class="font-financial-numeric text-financial-numeric text-on-surface-variant font-medium mt-0.5">R$ 48.650,00</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">FIIs (42%)</span>
+</div>
+<span class="font-financial-numeric text-financial-numeric text-on-surface-variant font-medium mt-0.5">R$ 34.820,00</span>
+</div>
+</div>
+</div>
+<!-- Chart 2: Proporção em Cotas (Pizza Pie SVG) -->
+<div class="rounded-xl bg-surface-container p-4 shadow-md flex flex-col">
+<div class="flex items-center justify-between mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Proporção em Cotas</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Quantidade absoluta de papéis</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm text-on-surface">1.630 total</span>
+</div>
+<div class="relative flex items-center justify-center my-3">
+<!-- 1250 vs 380 = 76.7% vs 23.3% -->
+<svg class="w-36 h-36" viewBox="0 0 160 160">
+<!-- FIIs Slice (23.3% ~ 84 degrees) -->
+<path class="transition-all hover:opacity-90" d="M 80 80 L 80 15 A 65 65 0 0 1 144 80 Z" fill="#4285F4"></path>
+<!-- Ações Slice (76.7% ~ 276 degrees) -->
+<path class="transition-all hover:opacity-90" d="M 80 80 L 144 80 A 65 65 0 1 1 80 15 Z" fill="#6cba3b"></path>
+<!-- Subtle Center Pivot Pin -->
+<circle cx="80" cy="80" fill="#131313" r="4"></circle>
+</svg>
+<div class="absolute bottom-1 right-2">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest font-label-sm text-label-sm text-on-surface">76.7% vs 23.3%</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2 bg-surface-container-lowest/50 p-2.5 rounded-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">Ações</span>
+</div>
+<span class="font-financial-numeric text-financial-numeric text-primary-fixed font-semibold mt-0.5">1.250 cotas</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+<span class="font-label-md text-label-md text-on-surface">FIIs</span>
+</div>
+<span class="font-financial-numeric text-financial-numeric text-secondary-fixed-dim font-semibold mt-0.5">380 cotas</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 2: Bar Visualizations -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Chart 3: Barras Horizontais (Valor por Ativo) -->
+<div class="rounded-xl bg-surface-container p-4 shadow-md flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Valor por Ativo</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Top posições por montante</p>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">bar_chart</span>
+</div>
+<!-- Horizontal Bar SVG Container -->
+<div class="w-full flex flex-col gap-3 py-1">
+<!-- Item 1: HGLG11 (R$ 19.500) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="font-semibold text-secondary-fixed-dim">HGLG11 <span class="text-on-surface-variant font-normal">FII</span></span>
+<span class="font-financial-numeric text-financial-numeric text-on-surface">R$ 19.500,00</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Item 2: PETR4 (R$ 18.200) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="font-semibold text-primary-fixed">PETR4 <span class="text-on-surface-variant font-normal">Ação</span></span>
+<span class="font-financial-numeric text-financial-numeric text-on-surface">R$ 18.200,00</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 93.3%;"></div>
+</div>
+</div>
+<!-- Item 3: VALE3 (R$ 16.100) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="font-semibold text-primary-fixed">VALE3 <span class="text-on-surface-variant font-normal">Ação</span></span>
+<span class="font-financial-numeric text-financial-numeric text-on-surface">R$ 16.100,00</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 82.5%;"></div>
+</div>
+</div>
+<!-- Item 4: MXRF11 (R$ 15.320) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-label-md text-label-md">
+<span class="font-semibold text-secondary-fixed-dim">MXRF11 <span class="text-on-surface-variant font-normal">FII</span></span>
+<span class="font-financial-numeric text-financial-numeric text-on-surface">R$ 15.320,00</span>
+</div>
+<div class="h-3 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 78.5%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-2 pt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span class="">Max: R$ 25.000</span><span class="">5 ativos somam R$ 83.470</span></div>
+</div>
+<!-- Chart 4: Barras Verticais (Cotas por Ativo) -->
+<div class="rounded-xl bg-surface-container p-4 shadow-md flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Cotas por Ativo</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Volume de cotas individuais</p>
+</div>
+<span class="px-2 py-0.5 rounded bg-surface-container-high font-label-sm text-label-sm text-on-surface">Unitário</span>
+</div>
+<!-- Vertical Bars SVG -->
+<div class="w-full h-44 relative flex items-end justify-between px-2 pt-4 pb-6"><div class="absolute inset-x-0 top-6 h-[1px] bg-surface-container-highest/60"></div><div class="absolute inset-x-0 top-18 h-[1px] bg-surface-container-highest/60"></div><div class="absolute inset-x-0 top-30 h-[1px] bg-surface-container-highest/60"></div><div class="flex flex-col items-center gap-1 z-10 w-12"><span class="font-label-sm text-label-sm text-secondary-fixed-dim font-semibold">1.4k</span><div class="w-7 rounded-t-md transition-all duration-300 hover:brightness-110" style="height: 104px; background-color: #4285F4;"></div><span class="font-label-md text-label-md text-on-surface font-medium truncate mt-1">MXRF</span></div><div class="flex flex-col items-center gap-1 z-10 w-12"><span class="font-label-sm text-label-sm text-primary-fixed font-semibold">650</span><div class="w-7 rounded-t-md transition-all duration-300 hover:brightness-110" style="height: 68px; background-color: #6CBA3B;"></div><span class="font-label-md text-label-md text-on-surface font-medium truncate mt-1">ITSA</span></div><div class="flex flex-col items-center gap-1 z-10 w-12"><span class="font-label-sm text-label-sm text-primary-fixed font-semibold">380</span><div class="w-7 rounded-t-md transition-all duration-300 hover:brightness-110" style="height: 48px; background-color: #6CBA3B;"></div><span class="font-label-md text-label-md text-on-surface font-medium truncate mt-1">BBAS</span></div><div class="flex flex-col items-center gap-1 z-10 w-12"><span class="font-label-sm text-label-sm text-primary-fixed font-semibold">320</span><div class="w-7 rounded-t-md transition-all duration-300 hover:brightness-110" style="height: 38px; background-color: #6CBA3B;"></div><span class="font-label-md text-label-md text-on-surface font-medium truncate mt-1">KLBN</span></div><div class="flex flex-col items-center gap-1 z-10 w-12"><span class="font-label-sm text-label-sm text-secondary-fixed-dim font-semibold">115</span><div class="w-7 rounded-t-md transition-all duration-300 hover:brightness-110" style="height: 22px; background-color: #4285F4;"></div><span class="font-label-md text-label-md text-on-surface font-medium truncate mt-1">XPML</span></div></div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-on-surface-variant pt-1">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-secondary-container"></span> FIIs fracionados</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-primary-container"></span> Lote padrão</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Large Panoramic Bottom Section: Evolução do Patrimônio (12 meses) -->
+<section class="px-space-md py-space-md">
+<div class="rounded-xl bg-surface-container p-4 shadow-xl flex flex-col relative overflow-hidden">
+<!-- Ambient Glow Behind Chart -->
+<div class="absolute -top-10 -right-10 w-48 h-48 bg-primary-container/10 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Header of Panoramic Card -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Histórico Consolidado</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Evolução do Patrimônio</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Baseado no Preço de Fechamento B3 (últimos 12 meses)</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-surface-container-high text-primary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[15px]">north_east</span>
+            +31.8% no ano
+          </span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex items-center gap-4 py-2 font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-1 rounded-full bg-primary-container"></span>
+<span class="">Ações (Curva verde)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-1 rounded-full bg-secondary-container"></span>
+<span class="">FIIs (Curva azul)</span>
+</div>
+<div class="flex items-center gap-1.5 ml-auto">
+<span class="w-2 h-2 rounded-full bg-on-surface"></span>
+<span class="">Consolidado</span>
+</div>
+</div>
+<!-- Panoramic SVG Area Chart -->
+<div class="w-full mt-2 relative">
+<svg class="w-full h-52 overflow-visible" preserveAspectRatio="none" viewBox="0 0 500 210">
+<defs>
+<!-- Green Gradient Fill -->
+<linearGradient id="primaryGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#6cba3b" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#6cba3b" stop-opacity="0.0"></stop>
+</linearGradient>
+<!-- Blue Gradient Fill -->
+<linearGradient id="secondaryGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#0162cf" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#0162cf" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<!-- Subtle Horizontal Grid Lines -->
+<line stroke="#353534" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="500" y1="30" y2="30"></line>
+<line stroke="#353534" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="500" y1="80" y2="80"></line>
+<line stroke="#353534" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="500" y1="130" y2="130"></line>
+<line stroke="#353534" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="500" y1="180" y2="180"></line>
+<!-- Axis Values on Left -->
+<text fill="#8a9480" font-family="Inter" font-size="9" x="5" y="26">R$ 85k</text>
+<text fill="#8a9480" font-family="Inter" font-size="9" x="5" y="76">R$ 68k</text>
+<text fill="#8a9480" font-family="Inter" font-size="9" x="5" y="126">R$ 52k</text>
+<text fill="#8a9480" font-family="Inter" font-size="9" x="5" y="176">R$ 35k</text>
+<!-- Area 1: FIIs Area (Blue) -->
+<path d="M 0 180 
+                   C 50 175, 100 168, 150 160 
+                   C 200 152, 250 148, 300 140 
+                   C 350 132, 400 128, 450 120 
+                   L 500 115 L 500 200 L 0 200 Z" fill="url(#secondaryGradient)"></path>
+<!-- Line 1: FIIs Path (Blue #0162cf) -->
+<path d="M 0 180 
+                   C 50 175, 100 168, 150 160 
+                   C 200 152, 250 148, 300 140 
+                   C 350 132, 400 128, 450 120 
+                   L 500 115" fill="none" stroke="#0162cf" stroke-linecap="round" stroke-width="2.2"></path>
+<!-- Area 2: Consolidated / Ações Overlay (Green) -->
+<path d="M 0 165 
+                   C 40 155, 80 148, 120 138 
+                   C 170 125, 210 115, 260 98 
+                   C 310 82, 360 70, 410 52 
+                   L 460 38 L 500 28 L 500 200 L 0 200 Z" fill="url(#primaryGradient)"></path>
+<!-- Line 2: Consolidated / Ações Path (Green #6cba3b) -->
+<path d="M 0 165 
+                   C 40 155, 80 148, 120 138 
+                   C 170 125, 210 115, 260 98 
+                   C 310 82, 360 70, 410 52 
+                   L 460 38 L 500 28" fill="none" stroke="#6cba3b" stroke-linecap="round" stroke-width="3"></path>
+<!-- Interactive Data Points / Markers -->
+<!-- Point Month 3 (FIIs) -->
+<circle cx="120" cy="164" fill="#0162cf" r="3.5" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Month 6 (FIIs) -->
+<circle cx="260" cy="146" fill="#0162cf" r="3.5" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Month 9 (FIIs) -->
+<circle cx="390" cy="129" fill="#0162cf" r="3.5" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Current (FIIs) -->
+<circle cx="500" cy="115" fill="#0162cf" r="4.5" stroke="#d8e2ff" stroke-width="2"></circle>
+<!-- Point Month 3 (Ações) -->
+<circle cx="120" cy="138" fill="#6cba3b" r="4" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Month 6 (Ações) -->
+<circle cx="260" cy="98" fill="#6cba3b" r="4" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Month 9 (Ações) -->
+<circle cx="410" cy="52" fill="#6cba3b" r="4" stroke="#131313" stroke-width="2"></circle>
+<!-- Point Current Peak -->
+<circle cx="500" cy="28" fill="#a5f871" r="5" stroke="#131313" stroke-width="2"></circle>
+</svg>
+<!-- Current Value Tooltip Anchor -->
+<div class="absolute right-0 top-0 transform -translate-y-2 flex flex-col items-end pointer-events-none">
+<div class="px-2 py-1 rounded bg-surface-container-highest shadow-md text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Hoje</span>
+<span class="font-financial-numeric text-financial-numeric text-primary font-bold">R$ 83.470</span>
+</div>
+</div>
+</div>
+<!-- X-Axis Labels (Months) -->
+<div class="grid grid-cols-6 text-center font-label-sm text-label-sm text-on-surface-variant pt-2 mt-1">
+<span class="">Mai</span>
+<span class="">Jul</span>
+<span class="">Set</span>
+<span class="">Nov</span>
+<span class="">Jan</span>
+<span class="text-primary font-semibold">Atual</span>
+</div>
+<!-- Bottom Context Pill -->
+</div>
+</section>
+<!-- PWA Offline Floating Sync Status Indicator -->
+</div>
+<script>
+  // Simple micro-interactions for active filters
+  const btnAll = document.getElementById('btn-filter-all');
+  const btnAcoes = document.getElementById('btn-filter-acoes');
+  const btnFiis = document.getElementById('btn-filter-fiis');
+
+  const filterButtons = [btnAll, btnAcoes, btnFiis];
+
+  filterButtons.forEach(btn => {
+    btn?.addEventListener('click', () => {
+      filterButtons.forEach(b => {
+        b.classList.remove('bg-surface-container-high', 'text-on-surface');
+        b.classList.add('bg-surface-container', 'text-on-surface-variant');
+      });
+      btn.classList.add('bg-surface-container-high', 'text-on-surface');
+      btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.3)]" data-active-classes="text-primary"><div class="flex justify-around items-center h-16 px-space-sm"><a aria-current="page" class="flex flex-col items-center justify-center w-16 h-12 transition-colors text-primary" data-path="dashboard-principal" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="font-label-sm text-label-sm mt-0.5">Início</span></a><a class="flex flex-col items-center justify-center w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="historico-de-transacoes" href="#"><span class="material-symbols-outlined text-[22px]">receipt_long</span><span class="font-label-sm text-label-sm mt-0.5">Ordens</span></a><a class="flex flex-col items-center justify-center w-16 h-12 text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil-da-conta" href="#"><span class="material-symbols-outlined text-[22px]">manage_accounts</span><span class="font-label-sm text-label-sm mt-0.5">Conta</span></a></div></nav>
+
+</body></html>
