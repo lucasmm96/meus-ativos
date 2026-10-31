@@ -1,5 +1,12 @@
 # TASKS — Orquestração Paralela
 
+## REGRAS DE VERSIONAMENTO E ENTREGA
+
+1. O Agente Gerenciador deve criar uma branch para cada trilha antes de iniciar o subagente (ex: `feat/db-schema`, `feat/core-calculos`).
+2. Nenhum subagente deve fazer commit na `main`.
+3. Ao finalizar uma trilha, o subagente deve fazer o commit na sua branch e o Agente Gerenciador deve abrir um Pull Request para a `main`.
+4. O Agente Gerenciador só faz o merge se os testes (Vitest) passarem no GitHub Actions.
+
 O agente gerenciador deve criar subagentes e atribuir as trilhas abaixo.
 Regra de Ouro: Nenhum subagente pode alterar arquivos fora da sua trilha.
 A integração é feita pelo gerenciador após a conclusão de todas as trilhas.
