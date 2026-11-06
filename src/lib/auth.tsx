@@ -46,6 +46,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data?.session && data?.user) {
         try {
           const jwt = await getJwt()
+          try {
+            await upsertUser(data.user.id, data.user.email ?? '', jwt)
+          } catch (e) {
+            console.error('upsertUser on session restore:', e)
+          }
           setUser({ id: data.user.id, email: data.user.email ?? '', jwt })
         } catch {
           // JWT exchange failed — user must re-login
