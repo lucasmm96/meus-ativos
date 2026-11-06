@@ -11,6 +11,16 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null)
 
+async function getJwt(sessionToken: string): Promise<string> {
+  const base = import.meta.env.VITE_NEON_AUTH_URL as string
+  const res = await fetch(`${base}/token`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  })
+  if (!res.ok) throw new Error(`JWT exchange failed: ${res.status}`)
+  const { token } = await res.json()
+  return token as string
+}
+
 async function upsertUser(id: string, email: string, jwt: string) {
   const base = import.meta.env.VITE_NEON_DATA_API_URL ?? ''
   if (!base) return
@@ -25,7 +35,7 @@ async function upsertUser(id: string, email: string, jwt: string) {
       body: JSON.stringify({ id, email }),
     })
   } catch {
-    // non-fatal: user record may already exist
+    // non-fatal
   }
 }
 
@@ -33,9 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
 
   useEffect(() => {
-    authClient.getSession().then(({ data }) => {
+    authClient.getSession().then(async ({ data }) => {
       if (data?.session && data?.user) {
-        setUser({ id: data.user.id, email: data.user.email ?? '', jwt: data.session.token })
+        try {
+          const jwt = await getJwt(data.session.token)
+          setUser({ id: data.user.id, email: data.user.email ?? '', jwt })
+        } catch {
+          // JWT exchange failed — user must re-login
+        }
       }
     })
   }, [])
@@ -44,8 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signIn.email({ email, password })
     if (error) throw new Error(error.message ?? 'Falha no login')
     if (!data) throw new Error('Falha no login')
-    const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt: data.session.token }
-    await upsertUser(authUser.id, authUser.email, authUser.jwt)
+    const jwt = await getJwt(data.session.token)
+    const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt }
+    await upsertUser(authUser.id, authUser.email, jwt)
     setUser(authUser)
   }, [])
 
@@ -53,8 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signUp.email({ email, password, name: email })
     if (error) throw new Error(error.message ?? 'Falha no cadastro')
     if (!data) throw new Error('Falha no cadastro')
-    const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt: data.session.token }
-    await upsertUser(authUser.id, authUser.email, authUser.jwt)
+    const jwt = await getJwt(data.session.token)
+    const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt }
+    await upsertUser(authUser.id, authUser.email, jwt)
     setUser(authUser)
   }, [])
 
