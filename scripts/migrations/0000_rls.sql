@@ -26,8 +26,8 @@ CREATE POLICY arquivamentos_owner ON arquivamentos
 
 -- ativos: anyone authenticated can read, writes blocked (service role only)
 CREATE POLICY ativos_read ON ativos FOR SELECT
-  USING (auth.role() = 'authenticated');
+  USING (auth.uid() IS NOT NULL);
 
 -- cotacoes: anyone authenticated can read, writes blocked (service role only)
 CREATE POLICY cotacoes_read ON cotacoes FOR SELECT
-  USING (auth.role() = 'authenticated');
+  USING (auth.uid() IS NOT NULL);
