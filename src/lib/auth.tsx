@@ -11,14 +11,13 @@ interface AuthCtx {
 
 const Ctx = createContext<AuthCtx | null>(null)
 
-async function getJwt(sessionToken: string): Promise<string> {
+async function getJwt(): Promise<string> {
   const base = import.meta.env.VITE_NEON_AUTH_URL as string
-  const res = await fetch(`${base}/token`, {
-    headers: { Authorization: `Bearer ${sessionToken}` },
-  })
-  if (!res.ok) throw new Error(`JWT exchange failed: ${res.status}`)
-  const { token } = await res.json()
-  return token as string
+  const res = await fetch(`${base}/token`, { credentials: 'include' })
+  if (!res.ok) throw new Error(`JWT exchange: ${res.status}`)
+  const { token } = (await res.json()) as { token?: string }
+  if (!token) throw new Error('Servidor não retornou JWT')
+  return token
 }
 
 async function upsertUser(id: string, email: string, jwt: string) {
@@ -46,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authClient.getSession().then(async ({ data }) => {
       if (data?.session && data?.user) {
         try {
-          const jwt = await getJwt(data.session.token)
+          const jwt = await getJwt()
           setUser({ id: data.user.id, email: data.user.email ?? '', jwt })
         } catch {
           // JWT exchange failed — user must re-login
@@ -59,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signIn.email({ email, password })
     if (error) throw new Error(error.message ?? 'Falha no login')
     if (!data) throw new Error('Falha no login')
-    const jwt = await getJwt(data.session.token)
+    const jwt = await getJwt()
     const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt }
     await upsertUser(authUser.id, authUser.email, jwt)
     setUser(authUser)
@@ -69,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await authClient.signUp.email({ email, password, name: email })
     if (error) throw new Error(error.message ?? 'Falha no cadastro')
     if (!data) throw new Error('Falha no cadastro')
-    const jwt = await getJwt(data.session.token)
+    const jwt = await getJwt()
     const authUser: AuthUser = { id: data.user.id, email: data.user.email ?? '', jwt }
     await upsertUser(authUser.id, authUser.email, jwt)
     setUser(authUser)
