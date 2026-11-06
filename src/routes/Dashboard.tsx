@@ -39,15 +39,26 @@ export function Dashboard() {
         }
         setResultados(calcularCarteira(txs, cotacoesMap))
 
-        // Build evolution data: group cotacoes by date, sum value across all positions
-        const byDate = new Map<string, number>()
+        // Build evolution: for each trading date, sum (qty held × closing price) for user's assets
+        const priceByDateTicker: Record<string, Record<string, number>> = {}
         for (const c of cotacoes) {
-          const existing = byDate.get(c.data) ?? 0
-          byDate.set(c.data, existing + parseFloat(c.precoFechamento))
+          if (!priceByDateTicker[c.data]) priceByDateTicker[c.data] = {}
+          priceByDateTicker[c.data][c.ativoTicker] = parseFloat(c.precoFechamento)
         }
-        setEvolutionData(
-          Array.from(byDate.entries()).sort().map(([date, total]) => ({ date, total }))
-        )
+        const sortedDates = Object.keys(priceByDateTicker).sort()
+        const sortedTxs = [...txs].sort((a, b) => a.data.localeCompare(b.data))
+        const evolution: { date: string; total: number }[] = []
+        for (const date of sortedDates) {
+          const txsBefore = sortedTxs.filter(tx => tx.data <= date)
+          if (txsBefore.length === 0) continue
+          const holdings: Record<string, number> = {}
+          for (const tx of txsBefore) holdings[tx.tickerCotacao] = (holdings[tx.tickerCotacao] ?? 0) + tx.quantidade
+          const prices = priceByDateTicker[date]
+          let total = 0
+          for (const [ticker, qty] of Object.entries(holdings)) total += (prices[ticker] ?? 0) * qty
+          evolution.push({ date, total })
+        }
+        setEvolutionData(evolution)
       } catch (e) {
         setError(String(e))
       } finally {
