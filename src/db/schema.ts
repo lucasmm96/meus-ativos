@@ -44,6 +44,9 @@ export const transacoes = pgTable('transacoes', {
   ativoTicker: varchar('ativoTicker', { length: 10 })
     .notNull()
     .references(() => ativos.ticker),
+  /** Denormalized from ativos.tickerCotacao for direct price lookups */
+  tickerCotacao: varchar('tickerCotacao', { length: 10 }).notNull(),
+  tipo: tipoAtivo('tipo').notNull(),
   data: date('data').notNull(),
   valorUnitario: numeric('valorUnitario', { precision: 18, scale: 6 }).notNull(),
   quantidade: integer('quantidade').notNull(),
@@ -70,13 +73,12 @@ export const arquivamentos = pgTable(
     userId: uuid('userId')
       .notNull()
       .references(() => users.id),
-    ativoTicker: varchar('ativoTicker', { length: 10 })
+    transacaoId: uuid('transacaoId')
       .notNull()
-      .references(() => ativos.ticker),
-    dataArquivamento: date('dataArquivamento').notNull(),
+      .references(() => transacoes.id, { onDelete: 'cascade' }),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.userId, table.ativoTicker] }),
+    pk: primaryKey({ columns: [table.userId, table.transacaoId] }),
   }),
 );
 

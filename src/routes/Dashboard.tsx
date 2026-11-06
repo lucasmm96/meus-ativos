@@ -23,10 +23,13 @@ export function Dashboard() {
       try {
         const [txs, cotacoes] = await Promise.all([
           neonFetch<Transacao[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
-          neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*', user!.jwt),
+          neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*&order=data.desc', user!.jwt),
         ])
+        // Keep most recent price per ticker (records come desc by date)
         const cotacoesMap: Record<string, string> = {}
-        for (const c of cotacoes) cotacoesMap[c.ativoTicker] = c.precoFechamento
+        for (const c of cotacoes) {
+          if (!(c.ativoTicker in cotacoesMap)) cotacoesMap[c.ativoTicker] = c.precoFechamento
+        }
         setResultados(calcularCarteira(txs, cotacoesMap))
 
         // Build evolution data: group cotacoes by date, sum value across all positions
