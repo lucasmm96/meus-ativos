@@ -1,9 +1,9 @@
 // PostgREST client for Neon Data API
 // Set VITE_NEON_API_URL to your Neon project's Data API endpoint
-const BASE = import.meta.env.VITE_NEON_API_URL ?? ''
+const BASE = import.meta.env.VITE_NEON_DATA_API_URL ?? ''
 
 export async function neonFetch<T>(path: string, jwt: string): Promise<T> {
-  if (!BASE) throw new Error('VITE_NEON_API_URL não configurado')
+  if (!BASE) throw new Error('VITE_NEON_DATA_API_URL não configurado')
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' },
   })
