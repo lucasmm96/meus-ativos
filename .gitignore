@@ -1,2 +1,64 @@
-.ai/.temp/
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Vite
+.vite/
+
+# PWA generated assets
+public/sw.js
+public/workbox-*.js
+public/sw.js.map
+public/workbox-*.js.map
+
+# Drizzle migrations (generated, commit selectively)
+drizzle/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Environment
+.env
 .env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python (scripts/ingestao)
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Claude
+.ai/.temp/
+.claude/
