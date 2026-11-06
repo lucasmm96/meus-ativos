@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "userId": "user-1",
+    "ativoTicker": "ITSA4F",
+    "tickerCotacao": "ITSA4",
+    "tipo": "ACAO",
+    "data": "2023-09-11",
+    "valorUnitario": "9.07",
+    "quantidade": 22
+  },
+  {
+    "id": "2",
+    "userId": "user-1",
+    "ativoTicker": "ITSA4F",
+    "tickerCotacao": "ITSA4",
+    "tipo": "ACAO",
+    "data": "2023-10-02",
+    "valorUnitario": "9.00",
+    "quantidade": 11
+  },
+  {
+    "id": "3",
+    "userId": "user-1",
+    "ativoTicker": "BBAS3",
+    "tickerCotacao": "BBAS3",
+    "tipo": "ACAO",
+    "data": "2023-11-15",
+    "valorUnitario": "54.20",
+    "quantidade": 5
+  },
+  {
+    "id": "4",
+    "userId": "user-1",
+    "ativoTicker": "HGLG11",
+    "tickerCotacao": "HGLG11",
+    "tipo": "FII",
+    "data": "2024-01-08",
+    "valorUnitario": "163.50",
+    "quantidade": 3
+  },
+  {
+    "id": "5",
+    "userId": "user-1",
+    "ativoTicker": "MXRF11",
+    "tickerCotacao": "MXRF11",
+    "tipo": "FII",
+    "data": "2024-02-14",
+    "valorUnitario": "9.95",
+    "quantidade": 50
+  }
+]
