@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch, neonMutate } from '../lib/neon'
-import type { Transacao, TipoAtivo } from '../core/types'
+import type { TransacaoRow, Transacao, TipoAtivo } from '../core/types'
 import { Button, Card } from '../components'
 
 interface Ativo {
@@ -36,11 +36,17 @@ export function Transactions() {
   async function fetchData() {
     if (!user) return
     try {
-      const [txs, ativosData, arquivamentos] = await Promise.all([
-        neonFetch<Transacao[]>(`/transacoes?userId=eq.${user.id}&select=*&order=data.desc`, user.jwt),
+      const [rows, ativosData, arquivamentos] = await Promise.all([
+        neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user.id}&select=*&order=data.desc`, user.jwt),
         neonFetch<Ativo[]>('/ativos?select=ticker,tickerCotacao,tipo,nome', user.jwt),
         neonFetch<{ transacaoId: string }[]>(`/arquivamentos?userId=eq.${user.id}&select=transacaoId`, user.jwt),
       ])
+      const ativosMap = Object.fromEntries(ativosData.map(a => [a.ticker, a]))
+      const txs: Transacao[] = rows.map(r => ({
+        ...r,
+        tickerCotacao: ativosMap[r.ativoTicker]?.tickerCotacao ?? r.ativoTicker,
+        tipo: ativosMap[r.ativoTicker]?.tipo ?? 'ACAO',
+      }))
       setTransacoes(txs)
       setAtivos(ativosData)
       setArchived(new Set(arquivamentos.map(a => a.transacaoId)))
@@ -92,11 +98,9 @@ export function Transactions() {
 
     setFormLoading(true)
     try {
-      const nova: Omit<Transacao, 'id'> = {
+      const nova = {
         userId: user.id,
         ativoTicker: ativo.ticker,
-        tickerCotacao: ativo.tickerCotacao,
-        tipo: ativo.tipo,
         data: formDate,
         valorUnitario: formValor,
         quantidade: parseInt(formQty, 10),

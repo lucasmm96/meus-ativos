@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { calcularCarteira } from '../core/calculo'
-import type { Transacao, ResultadoAtivo } from '../core/types'
+import type { TransacaoRow, Transacao, ResultadoAtivo } from '../core/types'
 import { Button } from '../components'
 import { SummaryCards } from '../components/charts/SummaryCards'
 import { AllocationPie } from '../components/charts/AllocationPie'
@@ -21,10 +21,17 @@ export function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        const [txs, cotacoes] = await Promise.all([
-          neonFetch<Transacao[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
+        const [rows, ativos, cotacoes] = await Promise.all([
+          neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
+          neonFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII' }[]>('/ativos?select=ticker,tickerCotacao,tipo', user!.jwt),
           neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*&order=data.desc', user!.jwt),
         ])
+        const ativosMap = Object.fromEntries(ativos.map(a => [a.ticker, a]))
+        const txs: Transacao[] = rows.map(r => ({
+          ...r,
+          tickerCotacao: ativosMap[r.ativoTicker]?.tickerCotacao ?? r.ativoTicker,
+          tipo: ativosMap[r.ativoTicker]?.tipo ?? 'ACAO',
+        }))
         // Keep most recent price per ticker (records come desc by date)
         const cotacoesMap: Record<string, string> = {}
         for (const c of cotacoes) {

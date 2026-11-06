@@ -4,10 +4,20 @@ export interface Transacao {
   id: string
   userId: string
   ativoTicker: string        // e.g. "ITSA4F" (fractional share ticker)
-  tickerCotacao: string      // e.g. "ITSA4" (base ticker for price lookup)
-  tipo: TipoAtivo
+  tickerCotacao: string      // from ativos join (not stored in transacoes)
+  tipo: TipoAtivo            // from ativos join (not stored in transacoes)
   data: string               // ISO date string "YYYY-MM-DD"
   valorUnitario: string      // numeric string, e.g. "9.07"
+  quantidade: number
+}
+
+/** Raw row from PostgREST — no join fields yet */
+export interface TransacaoRow {
+  id: string
+  userId: string
+  ativoTicker: string
+  data: string
+  valorUnitario: string
   quantidade: number
 }
 

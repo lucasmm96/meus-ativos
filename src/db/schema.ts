@@ -44,9 +44,6 @@ export const transacoes = pgTable('transacoes', {
   ativoTicker: varchar('ativoTicker', { length: 10 })
     .notNull()
     .references(() => ativos.ticker),
-  /** Denormalized from ativos.tickerCotacao for direct price lookups */
-  tickerCotacao: varchar('tickerCotacao', { length: 10 }).notNull(),
-  tipo: tipoAtivo('tipo').notNull(),
   data: date('data').notNull(),
   valorUnitario: numeric('valorUnitario', { precision: 18, scale: 6 }).notNull(),
   quantidade: integer('quantidade').notNull(),
