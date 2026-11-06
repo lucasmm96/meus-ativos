@@ -23,18 +23,18 @@ async function getJwt(): Promise<string> {
 async function upsertUser(id: string, email: string, jwt: string) {
   const base = import.meta.env.VITE_NEON_DATA_API_URL ?? ''
   if (!base) return
-  try {
-    await fetch(`${base}/users`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal,resolution=ignore-duplicates',
-      },
-      body: JSON.stringify({ id, email }),
-    })
-  } catch {
-    // non-fatal
+  const res = await fetch(`${base}/users`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal,resolution=ignore-duplicates',
+    },
+    body: JSON.stringify({ id, email }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`upsertUser ${res.status}: ${body}`)
   }
 }
 
