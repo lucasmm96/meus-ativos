@@ -2,6 +2,14 @@
 -- Row Level Security (RLS) — enable and define per-table access policies
 -- ---------------------------------------------------------------------------
 
+-- Grant table-level privileges to the authenticated role
+-- (PostgREST checks GRANT before RLS; without these grants every request gets 403)
+GRANT SELECT ON cotacoes TO authenticated;
+GRANT SELECT ON ativos TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON users TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON transacoes TO authenticated;
+GRANT SELECT, INSERT, DELETE ON arquivamentos TO authenticated;
+
 -- Enable RLS on each table
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transacoes ENABLE ROW LEVEL SECURITY;
