@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../lib/auth'
+import { neonFetch } from '../lib/neon'
+import { calcularCarteira } from '../core/calculo'
+import type { Transacao, ResultadoAtivo } from '../core/types'
+import { Button } from '../components'
+import { SummaryCards } from '../components/charts/SummaryCards'
+import { AllocationPie } from '../components/charts/AllocationPie'
+import { AllocationBar } from '../components/charts/AllocationBar'
+import { EvolutionLine } from '../components/charts/EvolutionLine'
+
+export function Dashboard() {
+  const { user, signOut } = useAuth()
+  const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
+  const [evolutionData, setEvolutionData] = useState<{ date: string; total: number }[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!user) return
+    async function load() {
+      try {
+        const [txs, cotacoes] = await Promise.all([
+          neonFetch<Transacao[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
+          neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*', user!.jwt),
+        ])
+        const cotacoesMap: Record<string, string> = {}
+        for (const c of cotacoes) cotacoesMap[c.ativoTicker] = c.precoFechamento
+        setResultados(calcularCarteira(txs, cotacoesMap))
+
+        // Build evolution data: group cotacoes by date, sum value across all positions
+        const byDate = new Map<string, number>()
+        for (const c of cotacoes) {
+          const existing = byDate.get(c.data) ?? 0
+          byDate.set(c.data, existing + parseFloat(c.precoFechamento))
+        }
+        setEvolutionData(
+          Array.from(byDate.entries()).sort().map(([date, total]) => ({ date, total }))
+        )
+      } catch (e) {
+        setError(String(e))
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [user])
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <img src="/favicon.svg" alt="Meus Ativos" className="w-7 h-7" />
+          <span className="font-display font-semibold text-text-primary text-lg">Meus Ativos</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/transactions">
+            <Button variant="secondary" className="h-9 px-3 text-xs">Transações</Button>
+          </Link>
+          <Button variant="secondary" className="h-9 px-3 text-xs" onClick={signOut}>Sair</Button>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        {loading && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
+        {error && <p className="text-alert font-body text-sm">{error}</p>}
+
+        {!loading && !error && (
+          <>
+            <SummaryCards resultados={resultados} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <AllocationPie resultados={resultados} mode="valor" />
+              <AllocationPie resultados={resultados} mode="cotas" />
+              <AllocationBar resultados={resultados} mode="valor" />
+              <AllocationBar resultados={resultados} mode="cotas" />
+            </div>
+
+            <EvolutionLine data={evolutionData} />
+          </>
+        )}
+      </main>
+    </div>
+  )
+}
