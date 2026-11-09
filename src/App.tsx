@@ -4,6 +4,7 @@ import { OfflineBanner } from './components'
 import { Login } from './routes/Login'
 import { Dashboard } from './routes/Dashboard'
 import { Transactions } from './routes/Transactions'
+import { Perfil } from './routes/Perfil'
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -19,6 +20,7 @@ function AppRoutes() {
       <Route path="/login" element={loading ? null : (user ? <Navigate to="/" replace /> : <Login />)} />
       <Route path="/" element={<Protected><Dashboard key={location.key} /></Protected>} />
       <Route path="/transactions" element={<Protected><Transactions /></Protected>} />
+      <Route path="/perfil" element={<Protected><Perfil /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

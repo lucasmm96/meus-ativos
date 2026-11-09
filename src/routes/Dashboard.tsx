@@ -80,6 +80,9 @@ export function Dashboard() {
           <Link to="/transactions">
             <Button variant="secondary" className="h-9 px-3 text-xs">Transações</Button>
           </Link>
+          <Link to="/perfil">
+            <Button variant="secondary" className="h-9 px-3 text-xs">Perfil</Button>
+          </Link>
           <Button variant="secondary" className="h-9 px-3 text-xs" onClick={signOut}>Sair</Button>
         </div>
       </header>

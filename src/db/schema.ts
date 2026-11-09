@@ -25,6 +25,7 @@ export const tipoAtivo = pgEnum('tipo_ativo', ['ACAO', 'FII']);
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: text('email').unique().notNull(),
+  name: text('name'),
   createdAt: timestamp('createdAt').defaultNow(),
 });
 
