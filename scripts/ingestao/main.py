@@ -286,6 +286,36 @@ def run_backfill_all(database_url: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Monthly reconciliation
+# ---------------------------------------------------------------------------
+
+def run_monthly_reconcile(database_url: str) -> None:
+    """Download previous month's COTAHIST_M file and fill any gaps from failed daily runs."""
+    today = datetime.now(timezone.utc).date()
+    prev = (today.replace(day=1) - timedelta(days=1))
+    year, month = prev.year, prev.month
+
+    fname = f"COTAHIST_M{month:02d}{year}"
+    url = f"{_B3_BASE}/{fname}.ZIP"
+    print(f"Reconciling {year}-{month:02d} ({fname})...")
+
+    conn = psycopg2.connect(database_url)
+    try:
+        cur = conn.cursor()
+        cur.execute('SELECT "tickerCotacao" FROM ativos')
+        valid_tickers: set[str] = {row[0] for row in cur.fetchall()}
+
+        data = _download(url)
+        z, f = _open_zip_txt(data, fname)
+        with z, f:
+            rows = _batch_upsert_cotacoes(cur, _stream_cotacoes(f, valid_tickers))
+        conn.commit()
+        print(f"Reconciled {year}-{month:02d}: {rows} rows processed")
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -299,6 +329,10 @@ def main() -> None:
 
     if os.environ.get("BACKFILL_ALL", "false").lower() == "true":
         run_backfill_all(database_url)
+        return
+
+    if os.environ.get("RECONCILE", "false").lower() == "true":
+        run_monthly_reconcile(database_url)
         return
 
     backfill = os.environ.get("BACKFILL", "false").lower() == "true"
