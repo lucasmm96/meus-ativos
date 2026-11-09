@@ -64,6 +64,12 @@ DATABASE_URL=... DADOS_B3_API_KEY=... \
 
 O Script B usa advisory lock em conexão direta (sem `-pooler`) para impedir duas execuções simultâneas. O Script A não usa lock e pode rodar durante o backfill; ambos fazem upsert idempotente por `(tipo, ticker, data_efetiva)`.
 
+### GitHub Actions e secret
+
+O workflow `.github/workflows/eventos-corporativos.yml` usa `secrets.DATABASE_URL_DEV` enquanto está no branch `dev`. Os workflows de COTAHIST (`ingest.yml`, `backfill.yml`, `reconcile.yml`) usam `secrets.DATABASE_URL`, que aponta para produção. No PR final `dev → master`, trocar o workflow de eventos para `secrets.DATABASE_URL`.
+
+`workflow_dispatch` exige o workflow no branch default (`master`); o critério 5 fica deferido para o PR final.
+
 ### Regras de ajuste
 
 - `fator_ajuste` = `efeito_liquido_do_dia`; `fator_declarado` não é usado.
