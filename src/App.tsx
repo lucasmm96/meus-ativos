@@ -6,15 +6,16 @@ import { Dashboard } from './routes/Dashboard'
 import { Transactions } from './routes/Transactions'
 
 function Protected({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
+  if (loading) return null
   return user ? <>{children}</> : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/login" element={loading ? null : (user ? <Navigate to="/" replace /> : <Login />)} />
       <Route path="/" element={<Protected><Dashboard /></Protected>} />
       <Route path="/transactions" element={<Protected><Transactions /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />

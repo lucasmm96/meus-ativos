@@ -4,6 +4,7 @@ import { authClient } from './auth-client'
 interface AuthUser { id: string; email: string; jwt: string }
 interface AuthCtx {
   user: AuthUser | null
+  loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
@@ -38,8 +39,27 @@ async function upsertUser(id: string, email: string, jwt: string) {
   }
 }
 
+export async function updateUserName(userId: string, name: string, jwt: string): Promise<void> {
+  const base = import.meta.env.VITE_NEON_DATA_API_URL ?? ''
+  if (!base) throw new Error('VITE_NEON_DATA_API_URL não configurado')
+  const res = await fetch(`${base}/users?id=eq.${userId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({ name }),
+  })
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`updateUserName ${res.status}: ${body}`)
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     authClient.getSession().then(async ({ data }) => {
@@ -56,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // JWT exchange failed — user must re-login
         }
       }
-    })
+    }).finally(() => setLoading(false))
   }, [])
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -84,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
-  return <Ctx.Provider value={{ user, signIn, signUp, signOut }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ user, loading, signIn, signUp, signOut }}>{children}</Ctx.Provider>
 }
 
 export function useAuth() {
