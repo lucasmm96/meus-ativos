@@ -65,7 +65,7 @@ def download_daily() -> list[dict]:
     today = datetime.now(timezone.utc).date()
     for delta in range(1, 6):
         d = today - timedelta(days=delta)
-        fname = f"COTD{d.strftime('%d%m%Y')}"
+        fname = f"COTAHIST_D{d.strftime('%d%m%Y')}"
         url = f"{_B3_BASE}/{fname}.ZIP"
         try:
             data = _download(url)
