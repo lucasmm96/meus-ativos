@@ -1,0 +1,27 @@
+name: Cotações Diárias
+
+on:
+  schedule:
+    # 22:00 UTC = 19:00 BRT — após fechamento da B3 (17:30 BRT) e disponibilidade Yahoo Finance
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Atualizar cotações (Yahoo Finance)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: node scripts/seed-cotacoes.mjs
