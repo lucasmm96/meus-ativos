@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
 import { OfflineBanner } from './components'
 import { Login } from './routes/Login'
@@ -13,10 +13,11 @@ function Protected({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user, loading } = useAuth()
+  const location = useLocation()
   return (
     <Routes>
       <Route path="/login" element={loading ? null : (user ? <Navigate to="/" replace /> : <Login />)} />
-      <Route path="/" element={<Protected><Dashboard /></Protected>} />
+      <Route path="/" element={<Protected><Dashboard key={location.key} /></Protected>} />
       <Route path="/transactions" element={<Protected><Transactions /></Protected>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
