@@ -42,8 +42,8 @@ def _parse(content: bytes) -> list[dict]:
     """Parse COTAHIST fixed-width text (latin-1). Returns type-02 records."""
     records = []
     for line in content.decode("latin-1").splitlines():
-        # Type-02 data records are exactly 245 chars; skip header/trailer.
-        if len(line) < 245 or line[0:2] != "02":
+        # Type-01 data records are exactly 245 chars; skip header (00) and trailer (99).
+        if len(line) < 245 or line[0:2] != "01":
             continue
         try:
             records.append({
