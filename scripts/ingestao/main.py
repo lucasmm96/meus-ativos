@@ -18,6 +18,7 @@ Usage:
 import io
 import os
 import sys
+import time
 import zipfile
 from datetime import datetime, timedelta, timezone
 
@@ -40,15 +41,32 @@ _B3_BASE = "https://bvmf.bmfbovespa.com.br/InstDados/SerHist"
 # ---------------------------------------------------------------------------
 
 def _download(url: str) -> bytes:
-    r = requests.get(url, timeout=120)
-    r.raise_for_status()
-    return r.content
+    for attempt in range(3):
+        try:
+            r = requests.get(url, timeout=180)
+            r.raise_for_status()
+            return r.content
+        except (requests.ConnectionError, requests.Timeout, requests.ChunkedEncodingError):
+            if attempt == 2:
+                raise
+            time.sleep(2 ** attempt)
+    raise RuntimeError("unreachable")
 
 
 def _open_zip_txt(data: bytes, fname: str):
-    """Return the open file object for {fname}.TXT inside a ZIP payload."""
+    """Return the open file object for the TXT inside a ZIP payload.
+
+    Old annual ZIPs (pre-2002) use a different internal filename,
+    so fall back to the first .TXT entry if the expected name is absent.
+    """
     z = zipfile.ZipFile(io.BytesIO(data))
-    return z, z.open(f"{fname}.TXT")
+    expected = f"{fname}.TXT"
+    if expected in z.namelist():
+        return z, z.open(expected)
+    txt_files = [n for n in z.namelist() if n.upper().endswith(".TXT")]
+    if txt_files:
+        return z, z.open(txt_files[0])
+    raise KeyError(f"No TXT file in archive. Contents: {z.namelist()}")
 
 
 # ---------------------------------------------------------------------------
