@@ -26,6 +26,7 @@ export function Transactions() {
 
   // Form state
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [formTicker, setFormTicker] = useState('')
   const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10))
   const [formValor, setFormValor] = useState('')
@@ -89,24 +90,52 @@ export function Transactions() {
     }
   }
 
+  function openNewForm() {
+    setEditingId(null)
+    setFormTicker('')
+    setFormDate(new Date().toISOString().slice(0, 10))
+    setFormValor('')
+    setFormQty('')
+    setFormError('')
+    setShowForm(v => !v)
+  }
+
+  function handleEditStart(tx: Transacao) {
+    setEditingId(tx.id)
+    setFormTicker(tx.ativoTicker)
+    setFormDate(tx.data)
+    setFormValor(tx.valorUnitario)
+    setFormQty(String(tx.quantidade))
+    setFormError('')
+    setShowForm(true)
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setFormError('')
     if (!user || !formTicker) return
-    const ativo = ativos.find(a => a.ticker === formTicker)
-    if (!ativo) return
 
     setFormLoading(true)
     try {
-      const nova = {
-        userId: user.id,
-        ativoTicker: ativo.ticker,
-        data: formDate,
-        valorUnitario: formValor,
-        quantidade: parseInt(formQty, 10),
+      if (editingId) {
+        await neonMutate(`/transacoes?id=eq.${editingId}`, user.jwt, {
+          data: formDate,
+          valorUnitario: formValor,
+          quantidade: parseInt(formQty, 10),
+        }, 'PATCH')
+      } else {
+        const ativo = ativos.find(a => a.ticker === formTicker)
+        if (!ativo) return
+        await neonMutate('/transacoes', user.jwt, {
+          userId: user.id,
+          ativoTicker: ativo.ticker,
+          data: formDate,
+          valorUnitario: formValor,
+          quantidade: parseInt(formQty, 10),
+        })
       }
-      await neonMutate('/transacoes', user.jwt, nova)
       setShowForm(false)
+      setEditingId(null)
       setFormValor('')
       setFormQty('')
       await fetchData()
@@ -152,7 +181,7 @@ export function Transactions() {
         <Button
           variant="primary"
           className="h-9 px-3 text-xs flex items-center gap-1"
-          onClick={() => setShowForm(v => !v)}
+          onClick={openNewForm}
         >
           <span className="material-symbols-outlined text-[16px]">{showForm ? 'close' : 'add'}</span>
           Nova Transação
@@ -168,9 +197,9 @@ export function Transactions() {
           <Card className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-equity/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-equity text-[18px]">add_circle</span>
+                <span className="material-symbols-outlined text-equity text-[18px]">{editingId ? 'edit' : 'add_circle'}</span>
               </div>
-              <span className="font-display font-semibold text-text-primary">Nova Compra</span>
+              <span className="font-display font-semibold text-text-primary">{editingId ? 'Editar Transação' : 'Nova Compra'}</span>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -183,9 +212,10 @@ export function Transactions() {
                   <select
                     id="asset-select"
                     required
+                    disabled={!!editingId}
                     value={formTicker}
                     onChange={e => setFormTicker(e.target.value)}
-                    className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-body text-sm rounded-xl px-4 appearance-none outline-none focus:border-yield transition-colors"
+                    className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-body text-sm rounded-xl px-4 appearance-none outline-none focus:border-yield transition-colors disabled:opacity-50"
                   >
                     <option value="" disabled>Selecione um ativo...</option>
                     {ativos.map(a => (
@@ -274,7 +304,7 @@ export function Transactions() {
 
               <Button type="submit" variant="primary" disabled={formLoading} className="w-full flex items-center justify-center gap-2 mt-1">
                 <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                {formLoading ? 'Salvando...' : 'Confirmar Compra'}
+                {formLoading ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Confirmar Compra'}
               </Button>
             </form>
           </Card>
@@ -346,6 +376,14 @@ export function Transactions() {
 
                   {/* Actions row */}
                   <div className="flex items-center justify-end gap-2 pt-1 border-t border-border-subtle">
+                    <button
+                      onClick={() => handleEditStart(tx)}
+                      className="px-2.5 py-1.5 rounded-lg bg-surface-elevated hover:bg-surface-card text-text-secondary font-body text-xs flex items-center gap-1 transition-colors"
+                      title="Editar transação"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">edit</span>
+                      Editar
+                    </button>
                     <button
                       onClick={() => handleArchive(tx.id)}
                       className="px-2.5 py-1.5 rounded-lg bg-surface-elevated hover:bg-surface-card text-text-secondary font-body text-xs flex items-center gap-1 transition-colors"
