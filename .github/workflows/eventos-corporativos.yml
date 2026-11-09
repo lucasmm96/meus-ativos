@@ -1,0 +1,33 @@
+name: Ingestão de Eventos Corporativos
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # segunda-feira, 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  eventos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+      - name: Ingestão dados-b3-mcp (/hoje)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/ingestao/eventos_b3_mcp.py
+      - name: Resumo
+        if: always()
+        run: |
+          echo "### Eventos corporativos" >> "$GITHUB_STEP_SUMMARY"
+          echo "Status: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Script B (backfill) é execução manual; não roda neste cron." >> "$GITHUB_STEP_SUMMARY"

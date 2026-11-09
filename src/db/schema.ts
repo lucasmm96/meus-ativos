@@ -18,6 +18,20 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 
 export const tipoAtivo = pgEnum('tipo_ativo', ['ACAO', 'FII']);
 
+export const tipoEventoCorporativo = pgEnum('tipo_evento_corporativo', [
+  'SPLIT',
+  'GRUPAMENTO',
+  'BONIFICACAO',
+  'SUBSCRICAO',
+  'MUDANCA_TICKER',
+  'MUDANCA_NOME',
+  'CISAO',
+  'FUSAO',
+  'INCORPORACAO',
+  'IPO',
+  'CANCELAMENTO',
+]);
+
 // ---------------------------------------------------------------------------
 // Tables
 // ---------------------------------------------------------------------------
@@ -80,6 +94,28 @@ export const arquivamentos = pgTable(
   }),
 );
 
+export const eventosCorporativos = pgTable('eventos_corporativos', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  tipo: tipoEventoCorporativo('tipo').notNull(),
+  ticker: varchar('ticker', { length: 10 }).notNull(),
+  tickerRelacionado: varchar('ticker_relacionado', { length: 10 }),
+  dataEfetiva: date('data_efetiva').notNull(),
+  fatorAjuste: numeric('fator_ajuste', { precision: 18, scale: 10 }),
+  descricao: text('descricao'),
+  fonte: varchar('fonte', { length: 50 }).notNull(),
+  fonteUrl: text('fonte_url'),
+  ingeridoEm: timestamp('ingerido_em').defaultNow().notNull(),
+});
+
+export const backfillProgress = pgTable('backfill_progress', {
+  ticker: varchar('ticker', { length: 10 })
+    .primaryKey()
+    .references(() => ativos.ticker, { onDelete: 'cascade' }),
+  status: varchar('status', { length: 20 }).notNull().default('pendente'),
+  ultimaTentativa: timestamp('ultima_tentativa', { withTimezone: true }),
+  motivoFalha: text('motivo_falha'),
+});
+
 // ---------------------------------------------------------------------------
 // Schema object (passed to drizzle({ schema }))
 // ---------------------------------------------------------------------------
@@ -90,6 +126,8 @@ export const schema = {
   transacoes,
   cotacoes,
   arquivamentos,
+  eventosCorporativos,
+  backfillProgress,
 } as const;
 
 // ---------------------------------------------------------------------------
