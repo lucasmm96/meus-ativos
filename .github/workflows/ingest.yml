@@ -2,7 +2,8 @@ name: Ingestão COTAHIST
 
 on:
   schedule:
-    - cron: '0 21 * * 1-5'
+    # 01:00 UTC = 22:00 BRT — COTAHIST D file is typically published by 20:00 BRT
+    - cron: '0 1 * * 2-6'
   workflow_dispatch:
 
 jobs:
