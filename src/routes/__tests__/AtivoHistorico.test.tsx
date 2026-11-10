@@ -254,6 +254,35 @@ describe('AtivoHistorico', () => {
     expect(container.textContent).toContain('Bonificação · 26/12/2025')
   })
 
+  it('exibe fechamento, faixa de 52 semanas, drawdown e retornos por período', async () => {
+    mockApi(
+      [
+        cotacao('WEGE3', '2024-06-03', '10', 'alta'),
+        cotacao('WEGE3', '2024-12-02', '20', 'alta'),
+        cotacao('WEGE3', '2025-01-06', '15', 'alta'),
+        cotacao('WEGE3', '2026-01-05', '25', 'alta'),
+        cotacao('WEGE3', '2026-11-06', '30', 'alta'),
+      ],
+      [],
+      { ticker: 'WEGE3', nome: 'WEG', tipo: 'ACAO' },
+    )
+
+    const container = await renderRoute('WEGE3')
+    const texto = container.textContent ?? ''
+
+    expect(texto).toContain('Fechamento mais recente')
+    expect(texto).toContain('30,00')
+    expect(texto).toContain('Faixa de 52 semanas')
+    expect(texto).toContain('25,00')
+    expect(texto).toContain('Drawdown máximo')
+    // Pico de 20 em 2024-12-02 → fundo de 15 em 2025-01-06: -25%.
+    expect(texto).toContain('-25,00%')
+    expect(texto).toContain('Retorno por período')
+    // 1A: 25 → 30 = +20%; 5A e Tudo: 10 → 30 = +200%.
+    expect(texto).toContain('20,00%')
+    expect(texto).toContain('200,00%')
+  })
+
   it('ticker antigo sem eventos mostra aviso amarelo e trecho tracejado pré-2010', async () => {
     mockApi(
       [

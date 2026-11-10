@@ -33,6 +33,8 @@ import {
 } from '../core/ativoHistorico'
 import {
   calcularCAGR,
+  calcularDrawdownMaximo,
+  calcularFaixa52Semanas,
   calcularRetornoPeriodo,
   calcularVolatilidade,
 } from '../core/indicadores'
@@ -71,6 +73,16 @@ function formatarPercentual(valor: number | null): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}%`
+}
+
+function formatarPreco(valor: string | number | null): string {
+  if (valor == null) return '—'
+  const numero = typeof valor === 'string' ? parseFloat(valor) : valor
+  if (!Number.isFinite(numero)) return '—'
+  return numero.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
 }
 
 function formatarEixoX(timestamp: number, dias: number): string {
@@ -188,6 +200,13 @@ export function AtivoHistorico() {
   const retorno = calcularRetornoPeriodo(dadosFiltrados)
   const cagr = calcularCAGR(dadosFiltrados)
   const volatilidade = calcularVolatilidade(dadosFiltrados)
+  const ultimoPonto = dados[dados.length - 1] ?? null
+  const faixa52s = calcularFaixa52Semanas(dados)
+  const drawdown = calcularDrawdownMaximo(dados)
+  const retornosPorPeriodo = PERIODOS.map((periodo) => ({
+    periodo,
+    valor: calcularRetornoPeriodo(filtrarPorPeriodo(dados, periodo)),
+  }))
 
   const diasSerie =
     dadosFiltrados.length > 1
@@ -412,6 +431,89 @@ export function AtivoHistorico() {
                   )}
                 </>
               )}
+            </Card>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Card>
+                <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
+                  Fechamento mais recente
+                </p>
+                <p className="text-text-primary font-body text-xl font-semibold tabular-nums">
+                  {formatarPreco(ultimoPonto?.preco_ajustado ?? null)}
+                </p>
+                <p className="text-text-tertiary font-body text-xs">
+                  {ultimoPonto ? formatarData(ultimoPonto.data) : '—'}
+                </p>
+              </Card>
+              <Card>
+                <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
+                  Faixa de 52 semanas
+                </p>
+                <p className="text-text-primary font-body text-xl font-semibold tabular-nums">
+                  {faixa52s
+                    ? `${formatarPreco(faixa52s.minima)} – ${formatarPreco(faixa52s.maxima)}`
+                    : '—'}
+                </p>
+                <div className="relative h-1.5 mt-2 rounded-full bg-surface-elevated">
+                  {faixa52s && (
+                    <span
+                      className="absolute w-2 h-2 rounded-full bg-equity"
+                      style={{
+                        left: `${faixa52s.posicao * 100}%`,
+                        top: '-1px',
+                        transform: 'translateX(-50%)',
+                      }}
+                    />
+                  )}
+                </div>
+              </Card>
+              <Card>
+                <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
+                  Drawdown máximo
+                </p>
+                <p
+                  className={`font-body text-xl font-semibold tabular-nums ${
+                    drawdown != null && drawdown < 0
+                      ? 'text-alert'
+                      : 'text-text-primary'
+                  }`}
+                  title="Maior queda do pico ao fundo na série ajustada pós-2010"
+                >
+                  {formatarPercentual(drawdown)}
+                </p>
+                <p className="text-text-tertiary font-body text-xs">
+                  Pico ao fundo · série pós-2010
+                </p>
+              </Card>
+            </div>
+
+            <Card>
+              <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-text-secondary mb-3">
+                Retorno por período
+              </h3>
+              <div className="grid grid-cols-5 gap-2">
+                {retornosPorPeriodo.map(({ periodo, valor }) => (
+                  <div key={periodo} className="text-center">
+                    <p className="font-body text-xs text-text-secondary">
+                      {periodo}
+                    </p>
+                    <p
+                      className={`font-body text-sm font-semibold tabular-nums ${
+                        valor == null
+                          ? 'text-text-tertiary'
+                          : valor >= 0
+                            ? 'text-equity'
+                            : 'text-alert'
+                      }`}
+                    >
+                      {formatarPercentual(valor)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="font-body text-[10px] text-text-tertiary text-center mt-2">
+                Calculado sobre a série ajustada pós-2010.
+              </p>
             </Card>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

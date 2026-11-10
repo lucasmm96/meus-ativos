@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { OfflineBanner } from './components'
 import { Login } from './routes/Login'
 import { Dashboard } from './routes/Dashboard'
+import { AtivosExplorer } from './routes/AtivosExplorer'
 import { AtivoHistorico } from './routes/AtivoHistorico'
 import { Transactions } from './routes/Transactions'
 import { Perfil } from './routes/Perfil'
@@ -20,6 +21,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={loading ? null : (user ? <Navigate to="/" replace /> : <Login />)} />
       <Route path="/" element={<Protected><Dashboard key={location.key} /></Protected>} />
+      <Route path="/ativos" element={<Protected><AtivosExplorer /></Protected>} />
       <Route path="/ativos/:ticker" element={<Protected><AtivoHistorico /></Protected>} />
       <Route path="/transactions" element={<Protected><Transactions /></Protected>} />
       <Route path="/perfil" element={<Protected><Perfil /></Protected>} />
