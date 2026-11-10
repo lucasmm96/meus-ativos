@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { calcularCarteira } from '../core/calculo'
+import type { CotacaoAjustada } from '../core/ativoHistorico'
+import {
+  extrairTickersUnicos,
+  mapearPrecoAjustadoMaisRecente,
+  montarEvolucaoPatrimonial,
+  montarUrlCotacoesAjustadas,
+  type PontoEvolucao,
+} from '../core/cotacoes'
 import type { TransacaoRow, Transacao, ResultadoAtivo } from '../core/types'
 import { Button } from '../components'
 import { SummaryCards } from '../components/charts/SummaryCards'
@@ -13,7 +21,7 @@ import { EvolutionLine } from '../components/charts/EvolutionLine'
 export function Dashboard() {
   const { user, signOut } = useAuth()
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
-  const [evolutionData, setEvolutionData] = useState<{ date: string; total: number }[]>([])
+  const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -21,10 +29,9 @@ export function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        const [rows, ativos, cotacoes] = await Promise.all([
+        const [rows, ativos] = await Promise.all([
           neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
           neonFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII' }[]>('/ativos?select=ticker,tickerCotacao,tipo', user!.jwt),
-          neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*&order=data.desc', user!.jwt),
         ])
         const ativosMap = Object.fromEntries(ativos.map(a => [a.ticker, a]))
         const txs: Transacao[] = rows.map(r => ({
@@ -32,33 +39,19 @@ export function Dashboard() {
           tickerCotacao: ativosMap[r.ativoTicker]?.tickerCotacao ?? r.ativoTicker,
           tipo: ativosMap[r.ativoTicker]?.tipo ?? 'ACAO',
         }))
-        // Keep most recent price per ticker (records come desc by date)
-        const cotacoesMap: Record<string, string> = {}
-        for (const c of cotacoes) {
-          if (!(c.ativoTicker in cotacoesMap)) cotacoesMap[c.ativoTicker] = c.precoFechamento
-        }
-        setResultados(calcularCarteira(txs, cotacoesMap))
 
-        // Build evolution: for each trading date, sum (qty held × closing price) for user's assets
-        const priceByDateTicker: Record<string, Record<string, number>> = {}
-        for (const c of cotacoes) {
-          if (!priceByDateTicker[c.data]) priceByDateTicker[c.data] = {}
-          priceByDateTicker[c.data][c.ativoTicker] = parseFloat(c.precoFechamento)
+        const tickers = extrairTickersUnicos(txs)
+        const urlCotacoes = montarUrlCotacoesAjustadas(tickers)
+        if (!urlCotacoes) {
+          setResultados([])
+          setEvolutionData([])
+          return
         }
-        const sortedDates = Object.keys(priceByDateTicker).sort()
-        const sortedTxs = [...txs].sort((a, b) => a.data.localeCompare(b.data))
-        const evolution: { date: string; total: number }[] = []
-        for (const date of sortedDates) {
-          const txsBefore = sortedTxs.filter(tx => tx.data <= date)
-          if (txsBefore.length === 0) continue
-          const holdings: Record<string, number> = {}
-          for (const tx of txsBefore) holdings[tx.tickerCotacao] = (holdings[tx.tickerCotacao] ?? 0) + tx.quantidade
-          const prices = priceByDateTicker[date]
-          let total = 0
-          for (const [ticker, qty] of Object.entries(holdings)) total += (prices[ticker] ?? 0) * qty
-          evolution.push({ date, total })
-        }
-        setEvolutionData(evolution)
+
+        const cotacoes = await neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt)
+        const cotacoesMap = mapearPrecoAjustadoMaisRecente(cotacoes)
+        setResultados(calcularCarteira(txs, cotacoesMap))
+        setEvolutionData(montarEvolucaoPatrimonial(txs, cotacoes))
       } catch (e) {
         setError(String(e))
       } finally {
