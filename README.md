@@ -35,14 +35,20 @@ Variáveis de ambiente ficam em `.env.local` (não versionado):
 - **Ações:** eventos de 2010 em diante são ingeridos pelo Script B; eventos recentes pelo Script A.
 - **FIIs:** a ferramenta `/eventos` rejeita FIIs (`tente_assim → fii`) e `/hoje` não os retorna. Nenhum evento de FII é ingerido. A UI deve tratar FIIs como cobertura zero.
 - **Mudança de ticker:** `/hoje.trocas` veio vazio mesmo com chave e `/eventos` não expõe trocas. Não há fonte de verdade. A UI avisa quando uma transação usa ticker ausente de `ativos`.
-- **Tickers sem cobertura na fonte:** `ALUP3`, `ALUP4`, `AZUL97`, `AZUL99`, `IBOV11` estão marcados `pulado` com motivo `sem cobertura na fonte: dadosb3.com`. Reverter para `pendente` se a fonte passar a cobrir.
+- **VALE3 — sem evento pós-2010:** VALE3 não teve split, grupamento ou bonificação após 2007-08-31 (eventos anteriores: desdobramentos 2004-08-19, 2006-05-22 e 2007-08-31, todos pré-2010). A série histórica de VALE3 no app é bruta, e a fonte dados-b3-mcp está correta ao omitir eventos pós-2010. A UI exibe o badge "Série pode não estar ajustada" porque VALE3 tem histórico >5 anos e nenhum evento registrado — o badge é informativo, não indica lacuna da fonte.
+- **Tickers pulados (281):**
+  - 272 FIIs: motivo `fonte não cobre FIIs`.
+  - 5 ações (`ALUP3`, `ALUP4`, `AZUL97`, `AZUL99`, `IBOV11`): motivo `sem cobertura na fonte: dadosb3.com`.
+  - 4 ações (`INEP4`, `KLBN3`, `KLBN4`, `RAIZ55`): motivo `ticker desconhecido na fonte: dadosb3.com`.
+- **Contagem final:** 274 eventos corporativos carregados, distribuídos em 179 tickers (SPLIT 122, BONIFICACAO 78, GRUPAMENTO 74). Fonte única: dados-b3-mcp.
+- **Reversão de pulados:** tickers marcados `pulado` podem ser revertidos para `pendente` se a fonte passar a cobri-los: `UPDATE backfill_progress SET status = 'pendente', motivo_falha = NULL WHERE ticker = 'X'` e rodar o backfill novamente.
 
 ### Backfill (Script B)
 
 A chave gratuita do dados-b3-mcp permite **200 consultas por dia**, com reset quando o dia vira no relógio do servidor. O banco tem 309 ações e 272 FIIs:
 
 - **3 execuções em dias distintos** (200 + 200 + 9 consultas de quota).
-- Em 2026-11-09 a primeira execução concluiu 95 ações; restam 209 consultas reais (200 no Dia 2, 9 no Dia 3).
+- Concluído em 2026-11-10: 300 ações `concluido`, 281 `pulado` (272 FIIs + 9 ações), 0 falhas.
 - FIIs são marcados como `pulado` sem consumir quota.
 - Tickers sem cobertura na fonte também são `pulado` sem consumir quota.
 
