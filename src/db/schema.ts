@@ -8,6 +8,7 @@ import {
   date,
   numeric,
   integer,
+  boolean,
   primaryKey,
 } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
@@ -62,6 +63,7 @@ export const transacoes = pgTable('transacoes', {
   data: date('data').notNull(),
   valorUnitario: numeric('valorUnitario', { precision: 18, scale: 6 }).notNull(),
   quantidade: integer('quantidade').notNull(),
+  ajustadaManualmente: boolean('ajustadaManualmente').notNull().default(false),
   createdAt: timestamp('createdAt').defaultNow(),
 });
 

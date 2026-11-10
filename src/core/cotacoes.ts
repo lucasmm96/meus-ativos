@@ -63,6 +63,8 @@ export function mapearPrecoAjustadoMaisRecente(
  * Série de evolução patrimonial: para cada data com cotação dos tickers
  * do usuário, soma quantidade mantida × preço ajustado. O preço bruto é
  * mantido em CotacaoAjustada apenas como referência e não entra no cálculo.
+ * Quando `fatores` é fornecido, a quantidade de cada transação é ajustada
+ * pelo fator acumulado dos eventos corporativos.
  */
 export function montarEvolucaoPatrimonial(
   transacoes: Transacao[],
@@ -72,6 +74,7 @@ export function montarEvolucaoPatrimonial(
       'ativoTicker' | 'data' | 'preco_ajustado' | 'confiabilidade'
     >
   >,
+  fatores?: Map<string, number>,
 ): PontoEvolucao[] {
   const precoPorDataTicker: Record<string, Record<string, number>> = {}
 
@@ -96,8 +99,9 @@ export function montarEvolucaoPatrimonial(
 
     const posicoes: Record<string, number> = {}
     for (const tx of transacoesAntes) {
+      const fator = fatores?.get(tx.id) ?? 1
       posicoes[tx.tickerCotacao] =
-        (posicoes[tx.tickerCotacao] ?? 0) + tx.quantidade
+        (posicoes[tx.tickerCotacao] ?? 0) + Math.round(tx.quantidade * fator)
     }
 
     const precos = precoPorDataTicker[data]

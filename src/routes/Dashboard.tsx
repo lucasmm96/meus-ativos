@@ -5,6 +5,10 @@ import { neonFetch } from '../lib/neon'
 import { calcularCarteira } from '../core/calculo'
 import type { CotacaoAjustada } from '../core/ativoHistorico'
 import {
+  fatoresPorTransacao,
+  type EventoAjuste,
+} from '../core/ajustarTransacoes'
+import {
   extrairTickersUnicos,
   mapearPrecoAjustadoMaisRecente,
   montarEvolucaoPatrimonial,
@@ -22,6 +26,8 @@ export function Dashboard() {
   const { user, signOut } = useAuth()
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
   const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
+  const [temAjuste, setTemAjuste] = useState(false)
+  const [temPre2010, setTemPre2010] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -45,13 +51,25 @@ export function Dashboard() {
         if (!urlCotacoes) {
           setResultados([])
           setEvolutionData([])
+          setTemAjuste(false)
+          setTemPre2010(false)
           return
         }
 
-        const cotacoes = await neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt)
+        const tickersEventos = [...new Set(txs.map(t => t.ativoTicker))]
+        const urlEventos = `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`
+
+        const [cotacoes, eventos] = await Promise.all([
+          neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt),
+          neonFetch<EventoAjuste[]>(urlEventos, user!.jwt),
+        ])
         const cotacoesMap = mapearPrecoAjustadoMaisRecente(cotacoes)
-        setResultados(calcularCarteira(txs, cotacoesMap))
-        setEvolutionData(montarEvolucaoPatrimonial(txs, cotacoes))
+        const fatores = fatoresPorTransacao(txs, eventos)
+
+        setTemAjuste(txs.some(t => (fatores.get(t.id) ?? 1) !== 1))
+        setTemPre2010(txs.some(t => t.data < '2010-01-01'))
+        setResultados(calcularCarteira(txs, cotacoesMap, fatores))
+        setEvolutionData(montarEvolucaoPatrimonial(txs, cotacoes, fatores))
       } catch (e) {
         setError(String(e))
       } finally {
@@ -86,7 +104,7 @@ export function Dashboard() {
 
         {!loading && !error && (
           <>
-            <SummaryCards resultados={resultados} />
+            <SummaryCards resultados={resultados} temAjuste={temAjuste} temPre2010={temPre2010} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AllocationPie resultados={resultados} mode="valor" />

@@ -12,9 +12,14 @@ export function calcularTotalTransacao(valorUnitario: string, quantidade: number
 
 /**
  * Weighted average price across all transactions of ONE asset.
- * Returns "0" if transacoes is empty.
+ * When `fatores` is provided, the quantity of each transaction is adjusted by
+ * its accumulated corporate-event factor, so the average price reflects the
+ * post-event share basis. Returns "0" if transacoes is empty.
  */
-export function calcularPrecoMedio(transacoes: Transacao[]): string {
+export function calcularPrecoMedio(
+  transacoes: Transacao[],
+  fatores?: Map<string, number>,
+): string {
   if (transacoes.length === 0) {
     return '0'
   }
@@ -23,9 +28,10 @@ export function calcularPrecoMedio(transacoes: Transacao[]): string {
   let totalQuantity = new Decimal(0)
 
   for (const t of transacoes) {
+    const fator = fatores?.get(t.id) ?? 1
     const cost = new Decimal(t.valorUnitario).mul(new Decimal(t.quantidade))
     totalCost = totalCost.plus(cost)
-    totalQuantity = totalQuantity.plus(new Decimal(t.quantidade))
+    totalQuantity = totalQuantity.plus(new Decimal(Math.round(t.quantidade * fator)))
   }
 
   if (totalQuantity.isZero()) {
@@ -37,6 +43,7 @@ export function calcularPrecoMedio(transacoes: Transacao[]): string {
 
 /**
  * Current market value of a position.
+ * `quantidadeTotal` must already include corporate-event adjustments.
  */
 export function calcularValorMercado(precoFechamento: string, quantidadeTotal: number): string {
   return new Decimal(precoFechamento).mul(new Decimal(quantidadeTotal)).toString()
@@ -45,6 +52,7 @@ export function calcularValorMercado(precoFechamento: string, quantidadeTotal: n
 /**
  * Absolute P&L for a position.
  * pnl = (precoFechamento - precoMedio) * quantidadeTotal
+ * `precoMedio` and `quantidadeTotal` must already include corporate-event adjustments.
  */
 export function calcularPnL(precoFechamento: string, precoMedio: string, quantidadeTotal: number): string {
   return new Decimal(precoFechamento)
@@ -56,11 +64,14 @@ export function calcularPnL(precoFechamento: string, precoMedio: string, quantid
 /**
  * Aggregate all transactions by asset ticker, returning one ResultadoAtivo per asset.
  * Pass cotacoes map (ticker → precoFechamento string) for market value computation.
+ * When `fatores` is provided, each transaction's quantity is adjusted by its
+ * accumulated corporate-event factor; valorInvestido keeps the original cost.
  * Assets with no matching cotacao still appear; their valorMercado and pnl are "0".
  */
 export function calcularCarteira(
   transacoes: Transacao[],
   cotacoes: Record<string, string>,
+  fatores?: Map<string, number>,
 ): ResultadoAtivo[] {
   // Group transactions by ativoTicker
   const grouped = new Map<string, Transacao[]>()
@@ -81,8 +92,11 @@ export function calcularCarteira(
     const tickerCotacao = firstTx.tickerCotacao
     const tipo = firstTx.tipo
 
-    const quantidadeTotal = txs.reduce((sum, t) => sum + t.quantidade, 0)
-    const precoMedio = calcularPrecoMedio(txs)
+    const quantidadeTotal = txs.reduce(
+      (sum, t) => sum + Math.round(t.quantidade * (fatores?.get(t.id) ?? 1)),
+      0,
+    )
+    const precoMedio = calcularPrecoMedio(txs, fatores)
     const valorInvestido = new Decimal(precoMedio).mul(new Decimal(quantidadeTotal)).toString()
 
     const precoFechamento = cotacoes[tickerCotacao]
