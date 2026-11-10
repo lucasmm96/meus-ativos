@@ -317,7 +317,7 @@ describe('Transactions — export CSV', () => {
   it('baixa CSV com BOM, cabeçalho e nome de arquivo datado', async () => {
     mockApi([transacao({ data: '2009-12-31', quantidade: 10 })])
 
-    const createObjectURL = vi.fn(() => 'blob:mock')
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:mock')
     const revokeObjectURL = vi.fn()
     Object.defineProperty(URL, 'createObjectURL', {
       value: createObjectURL,

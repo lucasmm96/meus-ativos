@@ -188,11 +188,6 @@ export function Transactions() {
     baixarCsvTransacoes(ajustarTransacoes(transacoes, eventos))
   }
 
-  const selectedAtivo = ativos.find(a => a.ticker === formTicker)
-  const estimatedTotal = formValor && formQty
-    ? (parseFloat(formValor) * parseInt(formQty, 10)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-    : 'R$ 0,00'
-
   const FILTER_CHIPS: { label: string; value: FilterType }[] = [
     { label: 'Todos', value: 'all' },
     { label: 'Ações', value: 'ACAO' },
