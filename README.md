@@ -9,17 +9,78 @@ Aplicativo pessoal para acompanhar ativos, transações e preços históricos da
 - Neon Postgres + PostgREST (Data API) + Drizzle ORM
 - Ingestão COTAHIST e eventos corporativos em Python 3.11
 
-## Desenvolvimento
+## Arquitetura de dados
+
+O app não tem backend próprio: o React fala diretamente com o Neon (Auth + Data API/PostgREST). O login devolve um JWT, enviado como `Authorization: Bearer` em cada chamada; o Postgres aplica RLS por usuário. Cálculos financeiros rodam no cliente com `decimal.js`.
+
+| Objeto | Papel |
+|---|---|
+| `ativos` | Cadastro de tickers (`ticker`, `tickerCotacao`, `tipo` ACAO/FII, `nome`). `tickerCotacao` liga o ticker negociado ao ticker da série de preços. |
+| `cotacoes` | Série COTAHIST por ativo/data (`precoFechamento` bruto), carregada pela ingestão Python. |
+| `transacoes` | Compras do usuário: `userId`, `ativoTicker`, `data`, `valorUnitario`, `quantidade` e `ajustadaManualmente` (migration 0004). |
+| `arquivamentos` | Arquivamento lógico de transações por usuário (soft delete na UI). |
+| `eventos_corporativos` | Eventos normalizados (`tipo`, `ticker`, `data_efetiva`, `fator_ajuste`, `fonte`), com unicidade em `(tipo, ticker, data_efetiva)`. |
+| `backfill_progress` | Estado por ticker do backfill histórico de eventos (`pendente`, `em_andamento`, `concluido`, `falha`, `pulado`). |
+| `cotacoes_ajustadas` (view) | `preco_ajustado = preco_bruto / Π(fatores de eventos com data_efetiva > data)`; `confiabilidade = 'alta'` a partir de 2010-01-01 e `'baixa'` antes. `security_invoker = true`, então respeita o RLS das tabelas base. |
+
+O frontend lê `preco_ajustado` da view. Para transações, `fatoresPorTransacao` multiplica a quantidade e divide o preço unitário pelos fatores de SPLIT/GRUPAMENTO/BONIFICACAO posteriores à compra; o custo original é preservado. Dashboard e Transactions usam essa quantidade ajustada em P&L, preço médio e evolução patrimonial.
+
+As migrations SQL ficam em `scripts/migrations/` (0000–0004) e são aplicadas manualmente, em ordem. O schema Drizzle em `src/db/schema.ts` documenta as tabelas, mas as migrations versionadas são os arquivos SQL.
+
+## Como rodar
+
+Pré-requisitos:
+
+- Node.js (LTS) + npm
+- Python 3.11+ (ingestão e backfill)
+- Projeto Neon com Auth e Data API habilitados (Postgres + PostgREST)
+
+1. Instale as dependências do frontend:
 
 ```bash
 npm install
-npm run dev
 ```
 
-Variáveis de ambiente ficam em `.env.local` (não versionado):
+2. Crie `.env.local` (não versionado) com:
 
-- `DATABASE_URL` — conexão Neon
-- `DADOS_B3_API_KEY` — chave gratuita do dados-b3-mcp (backfill de eventos)
+- `DATABASE_URL` — conexão direta/pooled do Neon, usada pela ingestão Python e pelos workflows
+- `VITE_NEON_AUTH_URL` — endpoint do Neon Auth
+- `VITE_NEON_DATA_API_URL` — endpoint da Data API/PostgREST
+- `DADOS_B3_API_KEY` — chave gratuita do dados-b3-mcp (apenas para o backfill de eventos)
+
+3. Aplique as migrations em ordem, no SQL Editor do Neon ou via `psql`:
+
+```text
+scripts/migrations/0000_rls.sql
+scripts/migrations/0001_eventos_corporativos.sql
+scripts/migrations/0002_cotacoes_ajustadas.sql
+scripts/migrations/0003_backfill_progress.sql
+scripts/migrations/0004_transacoes_ajustada_manualmente.sql
+```
+
+Todas são idempotentes. Detalhes em [Migrations](#migrations).
+
+4. Rode o frontend e valide:
+
+```bash
+npm run dev       # desenvolvimento
+npm run test:run  # testes frontend (Vitest)
+npm run build     # type-check + build de produção
+```
+
+5. Popule os dados:
+
+- **COTAHIST:** workflow `.github/workflows/ingest.yml` roda de terça a sábado (01:00 UTC); `backfill.yml` é manual para o histórico completo; `reconcile.yml` reconcilia o mês anterior todo dia 5. Todos usam `secrets.DATABASE_URL`.
+- **Eventos recentes:** workflow `.github/workflows/eventos-corporativos.yml` roda toda segunda-feira (06:00 UTC) e aceita `workflow_dispatch`.
+- **Backfill histórico de eventos:** execução manual do Script B, descrita em [Backfill (Script B)](#backfill-script-b).
+
+## Estado atual
+
+- Fases 1–6 da continuidade histórica concluídas no branch `dev` (eventos corporativos, view ajustada, tela `/ativos/:ticker`, P&L ajustado e transações pré-2010, override manual e CSV). A Fase 7 (linhagem de tickers) foi removida do escopo.
+- Frontend: 101 testes em 10 arquivos (`npx vitest run --dir src`), `npm run build` e `npx tsc -b --noEmit` sem erros.
+- Backfill de eventos: 300 tickers `concluido`, 281 `pulado`, 0 `falha`; 274 eventos carregados em 179 tickers.
+- Migrations 0001–0004 aplicadas e idempotentes no ambiente de desenvolvimento.
+- Pendente: abrir e mergear o PR `dev → master`. O workflow de eventos ainda usa `secrets.DATABASE_URL_DEV`; após o merge, validar com um `workflow_dispatch` em `master` e só então trocar para `secrets.DATABASE_URL` em um PR separado (1 linha). Depois disso o cron semanal passa a rodar em produção.
 
 ## Eventos corporativos
 
@@ -72,9 +133,9 @@ O Script B usa advisory lock em conexão direta (sem `-pooler`) para impedir dua
 
 ### GitHub Actions e secret
 
-O workflow `.github/workflows/eventos-corporativos.yml` usa `secrets.DATABASE_URL_DEV` enquanto está no branch `dev`. Os workflows de COTAHIST (`ingest.yml`, `backfill.yml`, `reconcile.yml`) usam `secrets.DATABASE_URL`, que aponta para produção. No PR final `dev → master`, trocar o workflow de eventos para `secrets.DATABASE_URL`.
+O workflow `.github/workflows/eventos-corporativos.yml` usa `secrets.DATABASE_URL_DEV` enquanto está no branch `dev`. Os workflows de COTAHIST (`ingest.yml`, `backfill.yml`, `reconcile.yml`) usam `secrets.DATABASE_URL`, que aponta para produção.
 
-`workflow_dispatch` exige o workflow no branch default (`master`); o critério 5 fica deferido para o PR final.
+O PR `dev → master` mantém `DATABASE_URL_DEV` no workflow de eventos: após o merge, um `workflow_dispatch` em `master` valida o mecanismo de ponta a ponta contra o banco de desenvolvimento (consome 1 chamada de `/eventos`). Se passar, um PR separado troca `secrets.DATABASE_URL_DEV` por `secrets.DATABASE_URL` (1 linha) e, após novo merge, o cron semanal passa a rodar em produção. `workflow_dispatch` exige o workflow no branch default, por isso a validação só é possível após o primeiro merge.
 
 ### Regras de ajuste
 
@@ -111,9 +172,24 @@ scripts/migrations/0000_rls.sql
 scripts/migrations/0001_eventos_corporativos.sql
 scripts/migrations/0002_cotacoes_ajustadas.sql
 scripts/migrations/0003_backfill_progress.sql
+scripts/migrations/0004_transacoes_ajustada_manualmente.sql
 ```
 
 Todas são idempotentes.
+
+## Limitações conhecidas
+
+- **FIIs:** cobertura zero de eventos corporativos nas duas rotas do dados-b3-mcp. A série é bruta e a UI mostra badge específico; não há como ajustar FIIs automaticamente.
+- **Mudança de ticker:** sem fonte de verdade. A tela `/ativos/:ticker` lê apenas o ticker atual (Fase 7 removida); transações com ticker ausente de `ativos` não recebem cotação.
+- **Cobertura histórica:** eventos confiáveis a partir de 2010. Preços anteriores a 2010 têm `confiabilidade = 'baixa'` e são exibidos tracejados; eventos corporativos entre a compra e 2010 podem não estar refletidos. P&L e CSV avisam quando há transação pré-2010.
+- **Tipos de evento:** apenas SPLIT, GRUPAMENTO e BONIFICACAO ajustam quantidade/preço. SUBSCRICAO, CISAO, FUSAO, INCORPORACAO, MUDANCA_TICKER e MUDANCA_NOME não alteram a série; eventos terminais geram banner na tela do ativo.
+- **Proventos:** dividendos e JCP não fazem parte da série ajustada; o ajuste cobre apenas eventos que alteram quantidade/preço.
+- **Eventos divergentes** descartados pela validação não são rastreados por ticker; apenas o log da ingestão registra ticker/data/tipo/motivo.
+- **VALE3:** sem eventos pós-2010 (fonte correta ao omitir). O badge "Série pode não estar ajustada" é informativo, não indica lacuna da fonte.
+- **Backfill:** 281 tickers pulados — 272 FIIs e 9 ações sem cobertura/ticker desconhecido na fonte (`ALUP3`, `ALUP4`, `AZUL97`, `AZUL99`, `IBOV11`, `INEP4`, `KLBN3`, `KLBN4`, `RAIZ55`).
+- **CSV de transações:** exporta quantidade e preço **ajustados** (os mesmos exibidos na UI), não os valores originais gravados no banco. Para reconciliação, o tooltip da lista mostra o valor original; colunas `quantidadeOriginal`/`valorUnitarioOriginal` no CSV são melhoria futura.
+- **P&L:** usa custo original (`valorInvestido`) contra valor de mercado ajustado. Não considera taxas, corretagem, IR nem proventos recebidos.
+- **Quota do dados-b3-mcp:** 200 consultas/dia na chave gratuita. O backfill precisa de múltiplas execuções; interrupções são retomadas por `backfill_progress`.
 
 ## Testes
 
