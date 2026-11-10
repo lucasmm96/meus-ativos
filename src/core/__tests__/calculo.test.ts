@@ -149,4 +149,11 @@ describe('calcularCarteira', () => {
     expect(result[0].quantidadeTotal).toBe(3)
     expect(parseFloat(result[0].precoMedio)).toBeCloseTo(163.5, 4)
   })
+
+  it('não lança erro e zera valorMercado quando cotacoesMap está vazio', () => {
+    const result = calcularCarteira(hglg11Txs, {})
+    expect(result[0].valorMercado).toBe('0')
+    expect(result[0].pnl).toBe('0')
+    expect(result[0].pnlPercent).toBe('0')
+  })
 })

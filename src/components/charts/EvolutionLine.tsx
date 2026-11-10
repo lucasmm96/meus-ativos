@@ -1,11 +1,51 @@
 import { useState } from 'react'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import type { Confiabilidade } from '../../core/ativoHistorico'
 import { ChartCard } from '../ChartCard'
 
-interface DataPoint { date: string; total: number }
+interface DataPoint {
+  date: string
+  total: number
+  confiabilidade: Confiabilidade
+}
 type Period = '1M' | '6M' | '1A' | 'Tudo'
 
 interface Props { data: DataPoint[] }
+
+const COR_ALTA = '#6cba3b'
+const COR_BAIXA = '#8a8a8a'
+const COR_CORTE = '#a0a0a0'
+
+function timestampDeIso(iso: string): number {
+  return new Date(`${iso}T00:00:00`).getTime()
+}
+
+function formatarEixoX(timestamp: number, dias: number): string {
+  const data = new Date(timestamp)
+  if (Number.isNaN(data.getTime())) return String(timestamp)
+  if (dias <= 400) {
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+    })
+  }
+  return String(data.getFullYear())
+}
+
+function formatarTimestamp(timestamp: number): string {
+  const data = new Date(timestamp)
+  if (Number.isNaN(data.getTime())) return String(timestamp)
+  return data.toLocaleDateString('pt-BR')
+}
 
 export function EvolutionLine({ data }: Props) {
   const [period, setPeriod] = useState<Period>('6M')
@@ -17,6 +57,31 @@ export function EvolutionLine({ data }: Props) {
     const cutoff = new Date(now.getFullYear(), now.getMonth() - months, now.getDate())
     return data.filter(d => new Date(d.date) >= cutoff)
   })()
+
+  const temPre2010 = filtered.some(d => d.confiabilidade === 'baixa')
+  const mostrarCorte2010 =
+    filtered.length > 0 &&
+    filtered[0].date <= '2010-01-01' &&
+    filtered[filtered.length - 1].date >= '2010-01-01'
+
+  const diasSerie =
+    filtered.length > 1
+      ? Math.max(
+          1,
+          Math.round(
+            (timestampDeIso(filtered[filtered.length - 1].date) -
+              timestampDeIso(filtered[0].date)) /
+              86_400_000,
+          ),
+        )
+      : 1
+
+  const chartData = filtered.map(d => ({
+    ...d,
+    timestamp: timestampDeIso(d.date),
+    totalAlta: d.confiabilidade === 'alta' ? d.total : null,
+    totalBaixa: d.confiabilidade === 'baixa' ? d.total : null,
+  }))
 
   return (
     <ChartCard title="Evolução Patrimonial">
@@ -33,12 +98,67 @@ export function EvolutionLine({ data }: Props) {
         ))}
       </div>
       <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={filtered}>
+        <LineChart
+          data={chartData}
+          margin={mostrarCorte2010 ? { top: 24, right: 8, bottom: 0, left: 0 } : undefined}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#2d2d2d" />
-          <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+          {mostrarCorte2010 ? (
+            <XAxis
+              dataKey="timestamp"
+              type="number"
+              scale="time"
+              domain={['dataMin', 'dataMax']}
+              tick={{ fill: '#a0a0a0', fontSize: 11 }}
+              minTickGap={48}
+              tickFormatter={(valor: number) => formatarEixoX(valor, diasSerie)}
+            />
+          ) : (
+            <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+          )}
           <YAxis tick={{ fill: '#a0a0a0', fontSize: 11 }} tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} />
-          <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
-          <Line type="monotone" dataKey="total" stroke="#6cba3b" strokeWidth={2} dot={false} />
+          <Tooltip
+            formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            labelFormatter={(label) =>
+              mostrarCorte2010 ? formatarTimestamp(Number(label)) : String(label)
+            }
+          />
+          {temPre2010 && (
+            <Line
+              type="monotone"
+              dataKey="totalBaixa"
+              name="Pré-2010 (confiabilidade baixa)"
+              stroke={COR_BAIXA}
+              strokeWidth={2}
+              strokeDasharray="4 4"
+              dot={false}
+              connectNulls={false}
+              isAnimationActive={false}
+            />
+          )}
+          <Line
+            type="monotone"
+            dataKey={temPre2010 ? 'totalAlta' : 'total'}
+            name={temPre2010 ? 'Pós-2010 (confiabilidade alta)' : undefined}
+            stroke={COR_ALTA}
+            strokeWidth={2}
+            dot={false}
+            connectNulls={false}
+            isAnimationActive={false}
+          />
+          {mostrarCorte2010 && (
+            <ReferenceLine
+              x={timestampDeIso('2010-01-01')}
+              stroke={COR_CORTE}
+              strokeDasharray="3 3"
+              label={{
+                value: 'Início da série ajustada',
+                position: 'insideTopLeft',
+                fill: COR_CORTE,
+                fontSize: 10,
+              }}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </ChartCard>

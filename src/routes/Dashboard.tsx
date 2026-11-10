@@ -3,6 +3,18 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { calcularCarteira } from '../core/calculo'
+import type { CotacaoAjustada } from '../core/ativoHistorico'
+import {
+  fatoresPorTransacao,
+  type EventoAjuste,
+} from '../core/ajustarTransacoes'
+import {
+  extrairTickersUnicos,
+  mapearPrecoAjustadoMaisRecente,
+  montarEvolucaoPatrimonial,
+  montarUrlCotacoesAjustadas,
+  type PontoEvolucao,
+} from '../core/cotacoes'
 import type { TransacaoRow, Transacao, ResultadoAtivo } from '../core/types'
 import { Button } from '../components'
 import { SummaryCards } from '../components/charts/SummaryCards'
@@ -13,7 +25,9 @@ import { EvolutionLine } from '../components/charts/EvolutionLine'
 export function Dashboard() {
   const { user, signOut } = useAuth()
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
-  const [evolutionData, setEvolutionData] = useState<{ date: string; total: number }[]>([])
+  const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
+  const [temAjuste, setTemAjuste] = useState(false)
+  const [temPre2010, setTemPre2010] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -21,10 +35,9 @@ export function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        const [rows, ativos, cotacoes] = await Promise.all([
+        const [rows, ativos] = await Promise.all([
           neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
           neonFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII' }[]>('/ativos?select=ticker,tickerCotacao,tipo', user!.jwt),
-          neonFetch<{ ativoTicker: string; data: string; precoFechamento: string }[]>('/cotacoes?select=*&order=data.desc', user!.jwt),
         ])
         const ativosMap = Object.fromEntries(ativos.map(a => [a.ticker, a]))
         const txs: Transacao[] = rows.map(r => ({
@@ -32,33 +45,31 @@ export function Dashboard() {
           tickerCotacao: ativosMap[r.ativoTicker]?.tickerCotacao ?? r.ativoTicker,
           tipo: ativosMap[r.ativoTicker]?.tipo ?? 'ACAO',
         }))
-        // Keep most recent price per ticker (records come desc by date)
-        const cotacoesMap: Record<string, string> = {}
-        for (const c of cotacoes) {
-          if (!(c.ativoTicker in cotacoesMap)) cotacoesMap[c.ativoTicker] = c.precoFechamento
-        }
-        setResultados(calcularCarteira(txs, cotacoesMap))
 
-        // Build evolution: for each trading date, sum (qty held × closing price) for user's assets
-        const priceByDateTicker: Record<string, Record<string, number>> = {}
-        for (const c of cotacoes) {
-          if (!priceByDateTicker[c.data]) priceByDateTicker[c.data] = {}
-          priceByDateTicker[c.data][c.ativoTicker] = parseFloat(c.precoFechamento)
+        const tickers = extrairTickersUnicos(txs)
+        const urlCotacoes = montarUrlCotacoesAjustadas(tickers)
+        if (!urlCotacoes) {
+          setResultados([])
+          setEvolutionData([])
+          setTemAjuste(false)
+          setTemPre2010(false)
+          return
         }
-        const sortedDates = Object.keys(priceByDateTicker).sort()
-        const sortedTxs = [...txs].sort((a, b) => a.data.localeCompare(b.data))
-        const evolution: { date: string; total: number }[] = []
-        for (const date of sortedDates) {
-          const txsBefore = sortedTxs.filter(tx => tx.data <= date)
-          if (txsBefore.length === 0) continue
-          const holdings: Record<string, number> = {}
-          for (const tx of txsBefore) holdings[tx.tickerCotacao] = (holdings[tx.tickerCotacao] ?? 0) + tx.quantidade
-          const prices = priceByDateTicker[date]
-          let total = 0
-          for (const [ticker, qty] of Object.entries(holdings)) total += (prices[ticker] ?? 0) * qty
-          evolution.push({ date, total })
-        }
-        setEvolutionData(evolution)
+
+        const tickersEventos = [...new Set(txs.map(t => t.ativoTicker))]
+        const urlEventos = `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`
+
+        const [cotacoes, eventos] = await Promise.all([
+          neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt),
+          neonFetch<EventoAjuste[]>(urlEventos, user!.jwt),
+        ])
+        const cotacoesMap = mapearPrecoAjustadoMaisRecente(cotacoes)
+        const fatores = fatoresPorTransacao(txs, eventos)
+
+        setTemAjuste(txs.some(t => (fatores.get(t.id) ?? 1) !== 1))
+        setTemPre2010(txs.some(t => t.data < '2010-01-01'))
+        setResultados(calcularCarteira(txs, cotacoesMap, fatores))
+        setEvolutionData(montarEvolucaoPatrimonial(txs, cotacoes, fatores))
       } catch (e) {
         setError(String(e))
       } finally {
@@ -93,7 +104,7 @@ export function Dashboard() {
 
         {!loading && !error && (
           <>
-            <SummaryCards resultados={resultados} />
+            <SummaryCards resultados={resultados} temAjuste={temAjuste} temPre2010={temPre2010} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AllocationPie resultados={resultados} mode="valor" />

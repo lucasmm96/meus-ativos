@@ -3,6 +3,12 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch, neonMutate } from '../lib/neon'
 import type { TransacaoRow, Transacao, TipoAtivo } from '../core/types'
+import {
+  ajustarTransacoes,
+  AVISO_PRE_2010,
+  type EventoAjuste,
+} from '../core/ajustarTransacoes'
+import { baixarCsvTransacoes } from '../core/exportCsv'
 import { Button, Card } from '../components'
 
 interface Ativo {
@@ -18,6 +24,7 @@ export function Transactions() {
   const { user } = useAuth()
 
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
+  const [eventos, setEventos] = useState<EventoAjuste[]>([])
   const [ativos, setAtivos] = useState<Ativo[]>([])
   const [archived, setArchived] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<FilterType>('all')
@@ -33,6 +40,8 @@ export function Transactions() {
   const [formQty, setFormQty] = useState('')
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState('')
+  const [formAjustadaManualmente, setFormAjustadaManualmente] = useState(false)
+  const [formPre2010Ciente, setFormPre2010Ciente] = useState(false)
 
   async function fetchData() {
     if (!user) return
@@ -51,6 +60,17 @@ export function Transactions() {
       setTransacoes(txs)
       setAtivos(ativosData)
       setArchived(new Set(arquivamentos.map(a => a.transacaoId)))
+
+      const tickersEventos = [...new Set(txs.map(t => t.ativoTicker))]
+      if (tickersEventos.length > 0) {
+        const eventosData = await neonFetch<EventoAjuste[]>(
+          `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`,
+          user.jwt,
+        )
+        setEventos(eventosData)
+      } else {
+        setEventos([])
+      }
     } catch (e) {
       setError(String(e))
     } finally {
@@ -97,6 +117,8 @@ export function Transactions() {
     setFormValor('')
     setFormQty('')
     setFormError('')
+    setFormAjustadaManualmente(false)
+    setFormPre2010Ciente(false)
     setShowForm(v => !v)
   }
 
@@ -107,6 +129,9 @@ export function Transactions() {
     setFormValor(tx.valorUnitario)
     setFormQty(String(tx.quantidade))
     setFormError('')
+    // Sempre desmarcado: o usuário precisa optar explicitamente por não ajustar.
+    setFormAjustadaManualmente(false)
+    setFormPre2010Ciente(false)
     setShowForm(true)
   }
 
@@ -122,6 +147,7 @@ export function Transactions() {
           data: formDate,
           valorUnitario: formValor,
           quantidade: parseInt(formQty, 10),
+          ajustadaManualmente: formAjustadaManualmente,
         }, 'PATCH')
       } else {
         const ativo = ativos.find(a => a.ticker === formTicker)
@@ -132,12 +158,15 @@ export function Transactions() {
           data: formDate,
           valorUnitario: formValor,
           quantidade: parseInt(formQty, 10),
+          ajustadaManualmente: false,
         })
       }
       setShowForm(false)
       setEditingId(null)
       setFormValor('')
       setFormQty('')
+      setFormAjustadaManualmente(false)
+      setFormPre2010Ciente(false)
       await fetchData()
     } catch (err) {
       setFormError(String(err))
@@ -146,17 +175,18 @@ export function Transactions() {
     }
   }
 
-  const filtered = transacoes.filter(t => {
+  const ajustadas = ajustarTransacoes(transacoes, eventos)
+
+  const filtered = ajustadas.filter(t => {
     const isArchived = archived.has(t.id)
     if (filter === 'archived') return isArchived
     if (filter === 'all') return !isArchived
     return t.tipo === filter && !isArchived
   })
 
-  const selectedAtivo = ativos.find(a => a.ticker === formTicker)
-  const estimatedTotal = formValor && formQty
-    ? (parseFloat(formValor) * parseInt(formQty, 10)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-    : 'R$ 0,00'
+  function handleExportCsv() {
+    baixarCsvTransacoes(ajustarTransacoes(transacoes, eventos))
+  }
 
   const FILTER_CHIPS: { label: string; value: FilterType }[] = [
     { label: 'Todos', value: 'all' },
@@ -178,14 +208,26 @@ export function Transactions() {
             <h1 className="font-display font-semibold text-text-primary text-lg leading-tight">Transações</h1>
           </div>
         </div>
-        <Button
-          variant="primary"
-          className="h-9 px-3 text-xs flex items-center gap-1"
-          onClick={openNewForm}
-        >
-          <span className="material-symbols-outlined text-[16px]">{showForm ? 'close' : 'add'}</span>
-          Nova Transação
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            className="h-9 px-3 text-xs flex items-center gap-1"
+            onClick={handleExportCsv}
+            disabled={transacoes.length === 0}
+            title="Exportar todas as transações em CSV"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Exportar CSV
+          </Button>
+          <Button
+            variant="primary"
+            className="h-9 px-3 text-xs flex items-center gap-1"
+            onClick={openNewForm}
+          >
+            <span className="material-symbols-outlined text-[16px]">{showForm ? 'close' : 'add'}</span>
+            Nova Transação
+          </Button>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
@@ -245,6 +287,27 @@ export function Transactions() {
                 </div>
               </div>
 
+              {formDate && formDate < '2010-01-01' && (
+                <div className="rounded-xl border border-yield/40 bg-yield/10 px-4 py-3">
+                  <p className="font-body text-xs text-yield leading-snug">
+                    O app tem dados de eventos corporativos confiáveis a partir de 2010.
+                    Splits, grupamentos ou bonificações entre a data da compra e 2010 não
+                    são considerados no cálculo automático. Ajuste manualmente se necessário.
+                  </p>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formPre2010Ciente}
+                      onChange={e => setFormPre2010Ciente(e.target.checked)}
+                      className="accent-yield"
+                    />
+                    <span className="font-body text-xs text-text-primary">
+                      Entendi, registrar mesmo assim
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {/* Qty + Price grid */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
@@ -283,6 +346,30 @@ export function Transactions() {
                   />
                 </div>
               </div>
+
+              {editingId && (
+                <label
+                  className="flex items-start gap-2 rounded-xl border border-border-subtle bg-bg-base px-4 py-3 cursor-pointer"
+                  title="Marque se você já ajustou manualmente a quantidade ou o preço médio para refletir splits/grupamentos/bonificações. Desmarcado, o app aplica os fatores automaticamente."
+                >
+                  <input
+                    type="checkbox"
+                    checked={formAjustadaManualmente}
+                    onChange={e => setFormAjustadaManualmente(e.target.checked)}
+                    className="mt-0.5 accent-yield"
+                  />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="font-body text-xs text-text-primary">
+                      Esta transação já reflete eventos corporativos (não ajustar automaticamente)
+                    </span>
+                    <span className="font-body text-[11px] text-text-tertiary">
+                      Marque se você já ajustou manualmente a quantidade ou o preço médio
+                      para refletir splits/grupamentos/bonificações. Desmarcado, o app
+                      aplica os fatores automaticamente.
+                    </span>
+                  </span>
+                </label>
+              )}
 
               {/* Total display */}
               <div className="bg-bg-base rounded-xl px-4 py-3 flex items-center justify-between border border-border-subtle">
@@ -345,6 +432,14 @@ export function Transactions() {
               const isAcao = tx.tipo === 'ACAO'
               const total = (parseFloat(tx.valorUnitario) * tx.quantidade).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
               const prefix = tx.ativoTicker.slice(0, 2).toUpperCase()
+              const fatorExibicao = tx.fatorAcumulado !== 1
+              const quantidadeExibida = fatorExibicao ? tx.quantidadeAjustada : tx.quantidade
+              const valorUnitarioExibido = fatorExibicao
+                ? parseFloat(tx.valorUnitarioAjustado)
+                : parseFloat(tx.valorUnitario)
+              const tooltipOriginal = fatorExibicao
+                ? `Original: ${tx.quantidade} ${isAcao ? 'ações' : 'cotas'} a R$ ${parseFloat(tx.valorUnitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (antes de splits/grupamentos/bonificações)`
+                : undefined
 
               return (
                 <Card key={tx.id} className={`flex flex-col gap-3 ${isArchived ? 'opacity-60' : ''}`}>
@@ -355,14 +450,36 @@ export function Transactions() {
                         {prefix}
                       </div>
                       <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-display font-semibold text-text-primary">{tx.ativoTicker}</span>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            to={`/ativos/${tx.tickerCotacao}`}
+                            className="font-display font-semibold text-text-primary hover:text-equity transition-colors"
+                            title={`Ver histórico de ${tx.tickerCotacao}`}
+                          >
+                            {tx.ativoTicker}
+                          </Link>
                           <span className={`px-2 py-0.5 rounded-full font-body text-xs font-semibold ${isAcao ? 'bg-equity/15 text-equity' : 'bg-yield/15 text-yield'}`}>
                             {isAcao ? 'Ação' : 'FII'}
                           </span>
+                          {tx.data < '2010-01-01' && (
+                            <span
+                              className="px-2 py-0.5 rounded-full border border-border-subtle bg-surface-elevated text-text-secondary font-body text-[10px] font-semibold"
+                              title={AVISO_PRE_2010}
+                            >
+                              Pré-2010
+                            </span>
+                          )}
+                          {tx.ajustadaManualmente && (
+                            <span
+                              className="px-2 py-0.5 rounded-full border border-border-subtle bg-surface-elevated text-text-secondary font-body text-[10px] font-semibold"
+                              title="Esta transação já reflete eventos corporativos e não recebe ajuste automático."
+                            >
+                              Ajustada manualmente
+                            </span>
+                          )}
                         </div>
-                        <span className="font-body text-xs text-text-secondary">
-                          {tx.quantidade} {isAcao ? 'ações' : 'cotas'} · R$ {parseFloat(tx.valorUnitario).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        <span className="font-body text-xs text-text-secondary" title={tooltipOriginal}>
+                          {quantidadeExibida} {isAcao ? 'ações' : 'cotas'} · R$ {valorUnitarioExibido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>

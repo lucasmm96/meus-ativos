@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../lib/auth'
 import { Button } from '../components'
-import { Input } from '../components'
 
 export function Login() {
   const { signIn, signUp } = useAuth()

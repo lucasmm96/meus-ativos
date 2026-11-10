@@ -9,6 +9,8 @@ export interface Transacao {
   data: string               // ISO date string "YYYY-MM-DD"
   valorUnitario: string      // numeric string, e.g. "9.07"
   quantidade: number
+  /** true = usuário já ajustou manualmente; fatores automáticos não se aplicam */
+  ajustadaManualmente?: boolean
 }
 
 /** Raw row from PostgREST — no join fields yet */
@@ -19,6 +21,7 @@ export interface TransacaoRow {
   data: string
   valorUnitario: string
   quantidade: number
+  ajustadaManualmente?: boolean
 }
 
 export interface ResultadoAtivo {
