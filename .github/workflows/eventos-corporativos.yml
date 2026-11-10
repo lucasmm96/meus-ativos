@@ -23,10 +23,7 @@ jobs:
         run: pip install -r scripts/requirements.txt
       - name: Ingestão dados-b3-mcp (/hoje)
         env:
-          # Branch dev: secret separado para não sobrescrever o DATABASE_URL
-          # de produção usado pelos workflows de COTAHIST. No PR final
-          # dev->master, trocar para secrets.DATABASE_URL.
-          DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python scripts/ingestao/eventos_b3_mcp.py
       - name: Resumo
         if: always()
