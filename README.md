@@ -78,6 +78,18 @@ O workflow `.github/workflows/eventos-corporativos.yml` usa `secrets.DATABASE_UR
 - Eventos com `fator` nulo, não numérico, `<= 0` ou `divergente_do_preco` são descartados.
 - **Eventos divergentes descartados não são rastreados por ticker.** Apenas o log registra ticker/data/tipo/motivo; a UI não consegue sinalizar o ticker específico.
 
+### Tela `/ativos/:ticker`
+
+- Gráfico de `preco_ajustado` com linha sólida pós-2010 e tracejada pré-2010, marcador em 2010-01-01 e um marcador vertical por evento.
+- Tooltip de evento mostra tipo humanizado, fator de ajuste e data (ex.: `Split 1:1.5 em 21/11/2018`); sem fator, mostra só tipo e data.
+- Badge "Série ajustada" quando o período exibido tem `fator_divisor != 1`.
+- FIIs mostram badge específico: eventos corporativos de FII não têm cobertura; a série é bruta, sem ajuste.
+- Ações sem eventos registrados e com histórico anterior a 5 anos mostram aviso amarelo de cobertura.
+- Rodapé informa que apenas desdobramentos automáticos estão registrados; outros eventos podem faltar.
+- Eventos terminais (cisão, fusão, incorporação, cancelamento) geram banner próprio.
+- Indicadores (retorno, CAGR, volatilidade) usam apenas linhas com `confiabilidade = 'alta'`; quando não há série suficiente, exibem "—".
+- A tela lê apenas o ticker atual; não há linhagem de tickers (Fase 7 removida).
+
 ### Bugs corrigidos na execução real (2026-11-09)
 
 - Cursor do Script B era fechado pelo bloco `with` e reutilizado no loop de tickers.

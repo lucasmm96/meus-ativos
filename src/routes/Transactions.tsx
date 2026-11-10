@@ -356,7 +356,13 @@ export function Transactions() {
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="font-display font-semibold text-text-primary">{tx.ativoTicker}</span>
+                          <Link
+                            to={`/ativos/${tx.tickerCotacao}`}
+                            className="font-display font-semibold text-text-primary hover:text-equity transition-colors"
+                            title={`Ver histórico de ${tx.tickerCotacao}`}
+                          >
+                            {tx.ativoTicker}
+                          </Link>
                           <span className={`px-2 py-0.5 rounded-full font-body text-xs font-semibold ${isAcao ? 'bg-equity/15 text-equity' : 'bg-yield/15 text-yield'}`}>
                             {isAcao ? 'Ação' : 'FII'}
                           </span>
