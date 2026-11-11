@@ -243,7 +243,6 @@ describe('Dashboard — P&L ajustado e pré-2010', () => {
     // 200 ações × R$15 = R$3.000; pnl=500, pct=20%.
     expect(texto).toContain('R$ 3.000,00')
     expect(texto).toContain('+20,00%')
-    expect(texto).toContain('Série ajustada')
   })
 
   it('não reaplica fator quando a transação está marcada como ajustada manualmente', async () => {

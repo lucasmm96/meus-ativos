@@ -25,7 +25,6 @@ export function Dashboard() {
   const { user, signOut } = useAuth()
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
   const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
-  const [temAjuste, setTemAjuste] = useState(false)
   const [temPre2010, setTemPre2010] = useState(false)
   const [loadingMain, setLoadingMain] = useState(true)
   const [loadingEvolution, setLoadingEvolution] = useState(true)
@@ -56,7 +55,6 @@ export function Dashboard() {
         if (!urlCotacoes) {
           setResultados([])
           setEvolutionData([])
-          setTemAjuste(false)
           setTemPre2010(false)
           setLoadingMain(false)
           setLoadingEvolution(false)
@@ -86,7 +84,6 @@ export function Dashboard() {
         ])
         const cotacoesMap = Object.fromEntries(ativosResumo.map(a => [a.ticker, a.preco_atual]))
         const fatores = fatoresPorTransacao(txs, eventos)
-        setTemAjuste(txs.some(t => (fatores.get(t.id) ?? 1) !== 1))
         setTemPre2010(txs.some(t => t.data < '2010-01-01'))
         setResultados(calcularCarteira(txs, cotacoesMap, fatores))
         setLoadingMain(false)
@@ -132,7 +129,7 @@ export function Dashboard() {
 
         {!loadingMain && !error && (
           <>
-            <SummaryCards resultados={resultados} temAjuste={temAjuste} temPre2010={temPre2010} />
+            <SummaryCards resultados={resultados} temPre2010={temPre2010} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AllocationPie resultados={resultados} mode="valor" />

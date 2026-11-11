@@ -6,7 +6,6 @@ import Decimal from 'decimal.js'
 
 interface Props {
   resultados: ResultadoAtivo[]
-  temAjuste?: boolean
   temPre2010?: boolean
 }
 
@@ -73,7 +72,7 @@ function PillVariacao({ pnl, investido }: PillVariacaoProps) {
   )
 }
 
-export function SummaryCards({ resultados, temAjuste = false, temPre2010 = false }: Props) {
+export function SummaryCards({ resultados, temPre2010 = false }: Props) {
   const acoes = resultados.filter(r => r.tipo === 'ACAO')
   const fiis = resultados.filter(r => r.tipo === 'FII')
 
@@ -111,14 +110,6 @@ export function SummaryCards({ resultados, temAjuste = false, temPre2010 = false
         <div className="flex items-center gap-2 mb-1">
           <p className="text-text-secondary font-body text-xs uppercase tracking-widest">Total — Mercado</p>
           <PillVariacao pnl={pnlTotal} investido={investidoTotal} />
-          {temAjuste && (
-            <span
-              className="px-2 py-0.5 rounded-full bg-equity/15 text-equity font-body text-[10px] font-semibold whitespace-nowrap"
-              title="Quantidades e preços médios ajustados por eventos corporativos."
-            >
-              Série ajustada
-            </span>
-          )}
         </div>
         <p className="text-text-primary font-mono text-xl font-semibold tabular-nums">{fmt(total.toString())}</p>
         {temPre2010 && (
