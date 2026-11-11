@@ -15,7 +15,8 @@ import {
   type PontoEvolucao,
 } from '../core/cotacoes'
 import type { TransacaoRow, Transacao, ResultadoAtivo } from '../core/types'
-import { Button } from '../components'
+import { Button, SkeletonCard } from '../components'
+import { cachedFetch } from '../lib/cache'
 import { SummaryCards } from '../components/charts/SummaryCards'
 import { AllocationPie } from '../components/charts/AllocationPie'
 import { AllocationBar } from '../components/charts/AllocationBar'
@@ -38,7 +39,10 @@ export function Dashboard() {
         // Fase 1: transações + mapa de ativos (paralelo)
         const [rows, ativos] = await Promise.all([
           neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
-          neonFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII' }[]>('/ativos?select=ticker,tickerCotacao,tipo', user!.jwt),
+          cachedFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII'; nome: string; negociavel: boolean }[]>(
+            'ativos-catalog',
+            () => neonFetch('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user!.jwt),
+          ),
         ])
         const ativosMap = Object.fromEntries(ativos.map(a => [a.ticker, a]))
         const txs: Transacao[] = rows.map(r => ({
@@ -127,7 +131,17 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {loadingMain && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
+        {loadingMain && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} className="h-48" />)}
+            </div>
+            <SkeletonCard className="h-64" />
+          </div>
+        )}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 
         {!loadingMain && !error && (
@@ -142,7 +156,7 @@ export function Dashboard() {
             </div>
 
             {loadingEvolution
-              ? <p className="text-text-secondary font-body text-sm">Carregando evolução...</p>
+              ? <SkeletonCard className="h-64" />
               : <EvolutionLine data={evolutionData} />
             }
           </>

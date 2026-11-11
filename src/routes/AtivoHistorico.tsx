@@ -13,7 +13,8 @@ import {
 } from 'recharts'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
-import { Card } from '../components'
+import { Card, SkeletonCard } from '../components'
+import { cachedFetch } from '../lib/cache'
 import {
   PERIODOS,
   deveExibirAvisoCobertura,
@@ -133,12 +134,12 @@ export function AtivoHistorico() {
       setLoading(true)
       setError('')
       try {
-        const ativosData = await neonFetch<AtivoInfo[]>(
-          `/ativos?ticker=eq.${encodeURIComponent(ticker)}&select=ticker,nome,tipo,"tickerCotacao"`,
-          user!.jwt,
+        const ativosCache = await cachedFetch<AtivoInfo[]>(
+          'ativos-catalog',
+          () => neonFetch('/ativos?select=ticker,nome,tipo,tickerCotacao,negociavel', user!.jwt),
         )
         if (cancelado) return
-        const ativoInfo = ativosData[0] ?? null
+        const ativoInfo = ativosCache.find((a) => a.ticker === ticker) ?? null
         const tickerCotacao = ativoInfo?.tickerCotacao ?? ticker
         const isAlias = tickerCotacao !== ticker
 
@@ -250,9 +251,7 @@ export function AtivoHistorico() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        {loading && (
-          <p className="text-text-secondary font-body text-sm">Carregando...</p>
-        )}
+        {loading && <SkeletonCard className="h-48" />}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 
         {!loading && !error && (

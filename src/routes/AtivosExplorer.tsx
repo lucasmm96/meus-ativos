@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
-import { Button, Card, Input } from '../components'
+import { Button, Card, Input, SkeletonAtivo } from '../components'
+import { cachedFetch } from '../lib/cache'
 import {
   FILTROS_ESCOPO,
   FILTROS_TIPO,
@@ -132,34 +133,51 @@ export function AtivosExplorer() {
 
     async function load() {
       try {
-        const [data, transacoes, mapaAtivos] = await Promise.all([
-          neonFetch<AtivoResumo[]>(
-            `/ativos_resumo?select=${CAMPOS_RESUMO}`,
-            user!.jwt,
-          ),
+        // Fase 1: transações + mapa de aliases (rápido)
+        const [transacoes, mapaAtivos] = await Promise.all([
           neonFetch<TransacaoCarteira[]>(
             `/transacoes?userId=eq.${user!.id}&select=ativoTicker,quantidade`,
             user!.jwt,
           ),
-          neonFetch<Array<{ ticker: string; tickerCotacao: string }>>(
-            '/ativos?select=ticker,tickerCotacao',
-            user!.jwt,
+          cachedFetch<Array<{ ticker: string; tickerCotacao: string }>>(
+            'ativos-catalog',
+            () => neonFetch('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user!.jwt),
           ),
         ])
         if (cancelado) return
-        setAtivos(data)
-        setTickersCarteira(
-          tickersDaCarteira(
-            transacoes,
-            Object.fromEntries(
-              mapaAtivos.map((ativo) => [ativo.ticker, ativo.tickerCotacao]),
-            ),
-          ),
-        )
-      } catch (e) {
-        if (!cancelado) setError(String(e))
-      } finally {
+
+        const aliasMap = Object.fromEntries(mapaAtivos.map((a) => [a.ticker, a.tickerCotacao]))
+        const tickers = tickersDaCarteira(transacoes, aliasMap)
+        setTickersCarteira(tickers)
+
+        // Fase 2a: só os tickers do usuário — mostra CARTEIRA imediatamente
+        if (tickers.size > 0) {
+          const carteiraData = await neonFetch<AtivoResumo[]>(
+            `/ativos_resumo?ticker=in.(${[...tickers].join(',')})&select=${CAMPOS_RESUMO}`,
+            user!.jwt,
+          )
+          if (cancelado) return
+          setAtivos(carteiraData)
+        }
         if (!cancelado) setLoading(false)
+      } catch (e) {
+        if (!cancelado) {
+          setError(String(e))
+          setLoading(false)
+        }
+        return
+      }
+
+      // Fase 2b: lista completa em background — pronta ao abrir aba MERCADO
+      if (cancelado) return
+      try {
+        const todosDados = await neonFetch<AtivoResumo[]>(
+          `/ativos_resumo?select=${CAMPOS_RESUMO}`,
+          user!.jwt,
+        )
+        if (!cancelado) setAtivos(todosDados)
+      } catch {
+        // Falha não-fatal: visão CARTEIRA já carregada
       }
     }
 
@@ -284,9 +302,9 @@ export function AtivosExplorer() {
         </Card>
 
         {loading && (
-          <p className="text-text-secondary font-body text-sm">
-            Carregando ativos...
-          </p>
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonAtivo key={i} />)}
+          </div>
         )}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 

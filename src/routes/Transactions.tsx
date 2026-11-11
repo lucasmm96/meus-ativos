@@ -21,7 +21,8 @@ import {
   LINHA_EXEMPLO_IMPORTACAO,
   type ResultadoImportacao,
 } from '../core/importCsv'
-import { Button, Card } from '../components'
+import { Button, Card, SkeletonCard } from '../components'
+import { cachedFetch } from '../lib/cache'
 
 interface Ativo {
   ticker: string
@@ -90,7 +91,10 @@ export function Transactions() {
     try {
       const [rows, ativosData, arquivamentos] = await Promise.all([
         neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user.id}&select=*&order=data.desc`, user.jwt),
-        neonFetch<Ativo[]>('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user.jwt),
+        cachedFetch<Ativo[]>(
+          'ativos-catalog',
+          () => neonFetch('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user.jwt),
+        ),
         neonFetch<{ transacaoId: string }[]>(`/arquivamentos?userId=eq.${user.id}&select=transacaoId`, user.jwt),
       ])
       const ativosMap = Object.fromEntries(ativosData.map(a => [a.ticker, a]))
@@ -364,7 +368,11 @@ export function Transactions() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {loading && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
+        {loading && (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        )}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 
         {importSucesso && (
