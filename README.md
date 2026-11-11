@@ -77,10 +77,30 @@ npm run build     # type-check + build de produção
 ## Estado atual
 
 - Fases 1–6 da continuidade histórica concluídas no branch `dev` (eventos corporativos, view ajustada, tela `/ativos/:ticker`, P&L ajustado e transações pré-2010, override manual e CSV). A Fase 7 (linhagem de tickers) foi removida do escopo.
-- Frontend: 101 testes em 10 arquivos (`npx vitest run --dir src`), `npm run build` e `npx tsc -b --noEmit` sem erros.
+- Frontend: 154 testes em 13 arquivos (`npx vitest run`), `npm run build` e `npx tsc -b --noEmit` sem erros.
 - Backfill de eventos: 300 tickers `concluido`, 281 `pulado`, 0 `falha`; 274 eventos carregados em 179 tickers.
 - Migrations 0001–0004 aplicadas e idempotentes no ambiente de desenvolvimento.
 - Pendente: abrir e mergear o PR `dev → master`. O workflow de eventos ainda usa `secrets.DATABASE_URL_DEV`; após o merge, validar com um `workflow_dispatch` em `master` e só então trocar para `secrets.DATABASE_URL` em um PR separado (1 linha). Depois disso o cron semanal passa a rodar em produção.
+
+## Importação de transações (CSV)
+
+A tela de Transações permite baixar um modelo e importar compras em lote. O arquivo usa `;` como separador, datas `AAAA-MM-DD` e vírgula como separador decimal:
+
+```text
+DATA;TICKER;TIPO;VALOR;QUANTIDADE
+2023-09-11;ITSA4F;ACAO;9,07;22
+```
+
+Regras de validação:
+
+- O cabeçalho precisa ser exatamente `DATA;TICKER;TIPO;VALOR;QUANTIDADE`.
+- O ticker precisa existir em `ativos`, e o `TIPO` informado (`ACAO` ou `FII`) precisa coincidir com o cadastro.
+- `VALOR` deve ser maior que zero, com no máximo 6 casas decimais. `QUANTIDADE` deve ser um inteiro positivo.
+- **Uma linha inválida bloqueia o arquivo inteiro.** A prévia lista os erros com o número da linha; nada é gravado até o arquivo ser corrigido.
+- Duplicatas são ignoradas e mostradas na prévia. A comparação usa ticker, data, valor e quantidade, tanto contra as transações já cadastradas quanto contra repetições dentro do próprio arquivo.
+- As transações são gravadas com `ajustadaManualmente = false`, então splits, grupamentos e bonificações posteriores são aplicados automaticamente.
+
+O arquivo aceito é apenas o modelo com ponto e vírgula; o CSV do botão "Exportar CSV" (vírgula e 7 colunas) não é aceito na importação.
 
 ## Eventos corporativos
 

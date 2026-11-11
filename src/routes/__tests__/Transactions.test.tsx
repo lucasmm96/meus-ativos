@@ -4,8 +4,40 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Transactions } from '../Transactions'
 import { neonFetch, neonMutate } from '../../lib/neon'
+import { modeloImportacaoCsv, NOME_MODELO_IMPORTACAO } from '../../core/importCsv'
 import type { EventoAjuste } from '../../core/ajustarTransacoes'
 import type { TransacaoRow } from '../../core/types'
+
+interface AtivoMock {
+  ticker: string
+  tickerCotacao: string
+  tipo: 'ACAO' | 'FII'
+  nome: string
+}
+
+const ativosPadrao: AtivoMock[] = [
+  {
+    ticker: 'BBAS3',
+    tickerCotacao: 'BBAS3',
+    tipo: 'ACAO',
+    nome: 'Banco do Brasil',
+  },
+]
+
+const ativosImportacao: AtivoMock[] = [
+  {
+    ticker: 'ITSA4F',
+    tickerCotacao: 'ITSA4',
+    tipo: 'ACAO',
+    nome: 'Itaúsa',
+  },
+  {
+    ticker: 'SAPR4F',
+    tickerCotacao: 'SAPR4',
+    tipo: 'ACAO',
+    nome: 'Sanepar',
+  },
+]
 
 const { mockUser } = vi.hoisted(() => ({
   mockUser: { id: 'user-1', email: 'user@example.com', jwt: 'jwt' },
@@ -50,19 +82,11 @@ function mockApi(
   transacoes: TransacaoRow[],
   eventos: EventoAjuste[] = [],
   arquivamentos: Array<{ transacaoId: string }> = [],
+  ativos: AtivoMock[] = ativosPadrao,
 ) {
   mockNeonFetch.mockImplementation((async (path: string) => {
     if (path.startsWith('/transacoes')) return transacoes
-    if (path.startsWith('/ativos')) {
-      return [
-        {
-          ticker: 'BBAS3',
-          tickerCotacao: 'BBAS3',
-          tipo: 'ACAO' as const,
-          nome: 'Banco do Brasil',
-        },
-      ]
-    }
+    if (path.startsWith('/ativos')) return ativos
     if (path.startsWith('/arquivamentos')) return arquivamentos
     if (path.startsWith('/eventos_corporativos')) return eventos
     throw new Error(`path inesperado: ${path}`)
@@ -138,6 +162,26 @@ async function alterarCampo(
         bubbles: true,
       }),
     )
+  })
+}
+
+async function selecionarArquivo(
+  container: HTMLElement,
+  conteudo: string,
+  nome = 'dados.csv',
+): Promise<void> {
+  const input = container.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement
+  const arquivo = new File([conteudo], nome, { type: 'text/csv' })
+  Object.defineProperty(input, 'files', {
+    configurable: true,
+    value: [arquivo],
+  })
+
+  await act(async () => {
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+    await new Promise((resolve) => setTimeout(resolve, 20))
   })
 }
 
@@ -355,5 +399,174 @@ describe('Transactions — export CSV', () => {
       )
     expect(anchor?.download).toMatch(/^transacoes-\d{4}-\d{2}-\d{2}\.csv$/)
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock')
+  })
+})
+
+describe('Transactions — import CSV', () => {
+  it('baixa o modelo vazio com o cabeçalho esperado', async () => {
+    mockApi([])
+
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:modelo')
+    const revokeObjectURL = vi.fn()
+    Object.defineProperty(URL, 'createObjectURL', {
+      value: createObjectURL,
+      configurable: true,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      value: revokeObjectURL,
+      configurable: true,
+    })
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+
+    const container = await renderTransactions()
+    await clicar(container, 'Importar CSV')
+    const createElementSpy = vi.spyOn(document, 'createElement')
+    await clicar(container, 'Baixar modelo CSV')
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    const blob = createObjectURL.mock.calls[0][0] as Blob
+    expect(await lerBlob(blob)).toBe(modeloImportacaoCsv())
+
+    const anchor = createElementSpy.mock.results
+      .map((resultado) => resultado.value)
+      .find(
+        (valor): valor is HTMLAnchorElement =>
+          valor instanceof HTMLAnchorElement && valor.download !== '',
+      )
+    expect(anchor?.download).toBe(NOME_MODELO_IMPORTACAO)
+    expect(clickSpy).toHaveBeenCalled()
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:modelo')
+  })
+
+  it('pré-visualiza, ignora duplicada e importa só a linha nova', async () => {
+    mockApi(
+      [
+        transacao({
+          id: 'tx-1',
+          ativoTicker: 'ITSA4F',
+          data: '2023-09-11',
+          valorUnitario: '9.07',
+          quantidade: 22,
+        }),
+      ],
+      [],
+      [],
+      ativosImportacao,
+    )
+
+    const container = await renderTransactions()
+    await clicar(container, 'Importar CSV')
+    await selecionarArquivo(
+      container,
+      [
+        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
+        '2023-09-11;ITSA4F;ACAO;9,07;22',
+        '2023-09-12;SAPR4F;ACAO;4,65;43',
+      ].join('\n'),
+      'carteira.csv',
+    )
+
+    const textoPreview = textoNormalizado(container)
+    expect(textoPreview).toContain('carteira.csv')
+    expect(textoPreview).toContain('1 transação válida')
+    expect(textoPreview).toContain('1 duplicata ignorada')
+    expect(textoPreview).toContain('Linha 2: já cadastrada')
+    expect(textoPreview).toContain('SAPR4F')
+    expect(textoPreview).toContain('R$ 4,65')
+
+    await clicar(container, 'Importar 1 transação')
+
+    expect(mockNeonMutate).toHaveBeenCalledWith('/transacoes', 'jwt', [
+      {
+        userId: 'user-1',
+        ativoTicker: 'SAPR4F',
+        data: '2023-09-12',
+        valorUnitario: '4.65',
+        quantidade: 43,
+        ajustadaManualmente: false,
+      },
+    ])
+    expect(textoNormalizado(container)).toContain('1 transação importada')
+  })
+
+  it('bloqueia o arquivo inteiro quando alguma linha tem erro', async () => {
+    mockApi([], [], [], ativosImportacao)
+
+    const container = await renderTransactions()
+    await clicar(container, 'Importar CSV')
+    await selecionarArquivo(
+      container,
+      [
+        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
+        '2023-02-30;ITSA4F;ACAO;9,07;22',
+        '2023-09-11;XPTO;ACAO;9,07;22',
+      ].join('\n'),
+    )
+
+    const texto = textoNormalizado(container)
+    expect(texto).toContain('Nenhuma transação será importada')
+    expect(texto).toContain('Linha 2: DATA inválida: "2023-02-30"')
+    expect(texto).toContain('Linha 3: TICKER não encontrado no cadastro: XPTO.')
+
+    const botoes = Array.from(container.querySelectorAll('button')).map(
+      (botaoAtual) => botaoAtual.textContent ?? '',
+    )
+    expect(botoes.some((rotulo) => rotulo.includes('transação'))).toBe(false)
+    expect(mockNeonMutate).not.toHaveBeenCalled()
+  })
+
+  it('não oferece importação quando todas as linhas são duplicadas', async () => {
+    mockApi(
+      [
+        transacao({
+          id: 'tx-1',
+          ativoTicker: 'ITSA4F',
+          data: '2023-09-11',
+          valorUnitario: '9.070000',
+          quantidade: 22,
+        }),
+      ],
+      [],
+      [],
+      ativosImportacao,
+    )
+
+    const container = await renderTransactions()
+    await clicar(container, 'Importar CSV')
+    await selecionarArquivo(
+      container,
+      [
+        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
+        '2023-09-11;ITSA4F;ACAO;9,070000;22',
+      ].join('\n'),
+    )
+
+    const texto = textoNormalizado(container)
+    expect(texto).toContain('0 transações válidas')
+    expect(texto).toContain('Nenhuma transação nova para importar.')
+    expect(texto).not.toContain('Importar 0 transações')
+  })
+
+  it('mostra o erro da API e mantém a prévia quando a inserção falha', async () => {
+    mockApi([], [], [], ativosImportacao)
+    mockNeonMutate.mockRejectedValueOnce(new Error('Neon API error 400'))
+
+    const container = await renderTransactions()
+    await clicar(container, 'Importar CSV')
+    await selecionarArquivo(
+      container,
+      [
+        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
+        '2023-09-12;SAPR4F;ACAO;4,65;43',
+      ].join('\n'),
+    )
+
+    await clicar(container, 'Importar 1 transação')
+
+    const texto = textoNormalizado(container)
+    expect(texto).toContain('Neon API error 400')
+    expect(texto).toContain('Importar 1 transação')
   })
 })
