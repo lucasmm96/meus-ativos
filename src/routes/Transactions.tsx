@@ -836,13 +836,15 @@ export function Transactions() {
                           )}
                         </div>
                         <span className="font-body text-xs text-text-secondary" title={tooltipOriginal}>
-                          {quantidadeExibida} {isAcao ? 'ações' : 'cotas'} · R$ {valorUnitarioExibido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          <span className="font-mono tabular-nums">{quantidadeExibida}</span>
+                          {' '}{isAcao ? 'ações' : 'cotas'} · R${' '}
+                          <span className="font-mono tabular-nums">{valorUnitarioExibido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         </span>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="font-mono font-semibold text-text-primary tabular-nums">{total}</span>
-                      <span className="font-body text-xs text-text-tertiary">
+                      <span className="font-mono text-xs text-text-tertiary tabular-nums">
                         {new Date(tx.data + 'T00:00:00').toLocaleDateString('pt-BR')}
                       </span>
                     </div>

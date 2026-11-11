@@ -109,12 +109,12 @@ export function EvolutionLine({ data }: Props) {
               type="number"
               scale="time"
               domain={['dataMin', 'dataMax']}
-              tick={{ fill: '#a0a0a0', fontSize: 11 }}
+              tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }}
               minTickGap={48}
               tickFormatter={(valor: number) => formatarEixoX(valor, diasSerie)}
             />
           ) : (
-            <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+            <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} />
           )}
           <YAxis tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} />
           <Tooltip

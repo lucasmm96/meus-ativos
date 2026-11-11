@@ -59,7 +59,7 @@ export function AllocationBar({ resultados, mode }: Props) {
       <ChartCard title="Valor por Ativo">
         <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 60)}>
           <BarChart data={data} layout="vertical" margin={{ top: 8, right: 20, bottom: 8, left: 8 }}>
-            <XAxis type="number" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+            <XAxis type="number" tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} />
             <YAxis
               dataKey="ticker"
               type="category"
@@ -82,7 +82,7 @@ export function AllocationBar({ resultados, mode }: Props) {
     <ChartCard title="Cotas por Ativo">
       <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 60)}>
         <BarChart data={data} layout="vertical" margin={{ top: 8, right: 20, bottom: 8, left: 8 }}>
-          <XAxis type="number" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+          <XAxis type="number" tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} />
           <YAxis
             dataKey="ticker"
             type="category"
