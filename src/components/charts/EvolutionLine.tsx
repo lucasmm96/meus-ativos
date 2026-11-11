@@ -116,7 +116,7 @@ export function EvolutionLine({ data }: Props) {
           ) : (
             <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
           )}
-          <YAxis tick={{ fill: '#a0a0a0', fontSize: 11 }} tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} />
+          <YAxis tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} />
           <Tooltip
             formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             labelFormatter={(label) =>

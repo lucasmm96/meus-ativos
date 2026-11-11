@@ -3,11 +3,15 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-feature-settings: "tnum" 1;
-  }
-
   body {
     @apply bg-background text-on-surface font-sans;
+  }
+}
+
+@layer utilities {
+  /* Recharts tooltip: usar fonte numérica com alinhamento tabular */
+  .recharts-tooltip-wrapper {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
   }
 }

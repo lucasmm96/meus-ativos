@@ -66,7 +66,7 @@ function LinhaAtivo({ ativo }: { ativo: AtivoResumo }) {
             <p className="font-body text-[10px] uppercase tracking-widest text-text-tertiary">
               Fechamento
             </p>
-            <p className="font-body text-sm font-semibold text-text-primary tabular-nums">
+            <p className="font-mono text-sm font-semibold text-text-primary tabular-nums">
               {formatarMoeda(ativo.preco_atual)}
             </p>
           </div>
@@ -76,7 +76,7 @@ function LinhaAtivo({ ativo }: { ativo: AtivoResumo }) {
               12 meses
             </p>
             <p
-              className={`font-body text-sm font-semibold tabular-nums ${corRetorno}`}
+              className={`font-mono text-sm font-semibold tabular-nums ${corRetorno}`}
             >
               {formatarRetorno(ativo.retorno_12m)}
             </p>
@@ -98,7 +98,7 @@ function LinhaAtivo({ ativo }: { ativo: AtivoResumo }) {
                 />
               )}
             </div>
-            <p className="font-body text-[10px] text-text-tertiary tabular-nums mt-1">
+            <p className="font-mono text-[10px] text-text-tertiary tabular-nums mt-1">
               {formatarMoeda(ativo.minima_52s)} –{' '}
               {formatarMoeda(ativo.maxima_52s)}
             </p>

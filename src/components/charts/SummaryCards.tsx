@@ -33,15 +33,15 @@ export function SummaryCards({ resultados, temAjuste = false, temPre2010 = false
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
         <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">Ações — Mercado</p>
-        <p className="text-equity font-body text-xl font-semibold tabular-nums">{fmt(totalAcoes.toString())}</p>
+        <p className="text-equity font-mono text-xl font-semibold tabular-nums">{fmt(totalAcoes.toString())}</p>
       </Card>
       <Card>
         <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">FIIs — Mercado</p>
-        <p className="text-yield font-body text-xl font-semibold tabular-nums">{fmt(totalFiis.toString())}</p>
+        <p className="text-yield font-mono text-xl font-semibold tabular-nums">{fmt(totalFiis.toString())}</p>
       </Card>
       <Card>
         <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">Total — Mercado</p>
-        <p className="text-text-primary font-body text-xl font-semibold tabular-nums">{fmt(total.toString())}</p>
+        <p className="text-text-primary font-mono text-xl font-semibold tabular-nums">{fmt(total.toString())}</p>
       </Card>
       <Card>
         <div className="flex items-center gap-2 mb-1">
@@ -55,7 +55,7 @@ export function SummaryCards({ resultados, temAjuste = false, temPre2010 = false
             </span>
           )}
         </div>
-        <p className={`font-body text-xl font-semibold tabular-nums ${totalPnl.isNegative() ? 'text-alert' : 'text-equity'}`}>
+        <p className={`font-mono text-xl font-semibold tabular-nums ${totalPnl.isNegative() ? 'text-alert' : 'text-equity'}`}>
           {fmt(totalPnl.toString())}
         </p>
         {temPre2010 && (

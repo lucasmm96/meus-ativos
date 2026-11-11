@@ -536,16 +536,16 @@ export function Transactions() {
                             key={linha.linha}
                             className="border-t border-border-subtle text-text-primary"
                           >
-                            <td className="py-1 pr-2 tabular-nums">{linha.linha}</td>
+                            <td className="py-1 pr-2 font-mono tabular-nums">{linha.linha}</td>
                             <td className="py-1 pr-2">{linha.ativoTicker}</td>
-                            <td className="py-1 pr-2 tabular-nums">{linha.data}</td>
+                            <td className="py-1 pr-2 font-mono tabular-nums">{linha.data}</td>
                             <td className="py-1 pr-2">
                               {linha.tipo === 'ACAO' ? 'Ação' : 'FII'}
                             </td>
-                            <td className="py-1 pr-2 tabular-nums">
+                            <td className="py-1 pr-2 font-mono tabular-nums">
                               R$ {formatarValorImportado(linha.valorUnitario)}
                             </td>
-                            <td className="py-1 tabular-nums">{linha.quantidade}</td>
+                            <td className="py-1 font-mono tabular-nums">{linha.quantidade}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -681,7 +681,7 @@ export function Transactions() {
                       placeholder="100"
                       value={formQty}
                       onChange={e => setFormQty(e.target.value)}
-                      className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-body text-sm rounded-xl px-4 outline-none focus:border-yield transition-colors"
+                      className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-mono text-sm rounded-xl px-4 outline-none focus:border-yield transition-colors tabular-nums"
                     />
                     <span className="absolute right-3 top-3.5 text-text-secondary text-xs pointer-events-none">un</span>
                   </div>
@@ -699,7 +699,7 @@ export function Transactions() {
                     placeholder="34,50"
                     value={formValor}
                     onChange={e => setFormValor(e.target.value)}
-                    className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-body text-sm rounded-xl px-4 outline-none focus:border-yield transition-colors"
+                    className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-mono text-sm rounded-xl px-4 outline-none focus:border-yield transition-colors tabular-nums"
                   />
                 </div>
               </div>
@@ -736,7 +736,7 @@ export function Transactions() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-equity font-body font-bold text-sm">R$</span>
-                  <span className="text-equity font-display text-2xl font-semibold tabular-nums">
+                  <span className="text-equity font-mono text-2xl font-semibold tabular-nums">
                     {formValor && formQty
                       ? (parseFloat(formValor) * parseInt(formQty, 10)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })
                       : '0,00'}
@@ -841,7 +841,7 @@ export function Transactions() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-body font-semibold text-text-primary tabular-nums">{total}</span>
+                      <span className="font-mono font-semibold text-text-primary tabular-nums">{total}</span>
                       <span className="font-body text-xs text-text-tertiary">
                         {new Date(tx.data + 'T00:00:00').toLocaleDateString('pt-BR')}
                       </span>

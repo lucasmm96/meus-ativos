@@ -66,7 +66,8 @@ export default {
       fontFamily: {
         display: ['"Playfair Display"', 'serif'],
         body: ['Inter', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       borderRadius: {
         sm: '0.25rem',

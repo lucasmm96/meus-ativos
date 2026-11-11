@@ -344,14 +344,14 @@ export function AtivoHistorico() {
                         type="number"
                         scale="time"
                         domain={['dataMin', 'dataMax']}
-                        tick={{ fill: '#a0a0a0', fontSize: 11 }}
+                        tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }}
                         minTickGap={48}
                         tickFormatter={(valor: number) =>
                           formatarEixoX(valor, diasSerie)
                         }
                       />
                       <YAxis
-                        tick={{ fill: '#a0a0a0', fontSize: 11 }}
+                        tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }}
                         tickFormatter={(valor: number) =>
                           `R$${valor.toLocaleString('pt-BR', {
                             maximumFractionDigits: 0,
@@ -444,7 +444,7 @@ export function AtivoHistorico() {
                 <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
                   Fechamento mais recente
                 </p>
-                <p className="text-text-primary font-body text-xl font-semibold tabular-nums">
+                <p className="text-text-primary font-mono text-xl font-semibold tabular-nums">
                   {formatarPreco(ultimoPonto?.preco_ajustado ?? null)}
                 </p>
                 <p className="text-text-tertiary font-body text-xs">
@@ -455,7 +455,7 @@ export function AtivoHistorico() {
                 <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
                   Faixa de 52 semanas
                 </p>
-                <p className="text-text-primary font-body text-xl font-semibold tabular-nums">
+                <p className="text-text-primary font-mono text-xl font-semibold tabular-nums">
                   {faixa52s
                     ? `${formatarPreco(faixa52s.minima)} – ${formatarPreco(faixa52s.maxima)}`
                     : '—'}
@@ -478,7 +478,7 @@ export function AtivoHistorico() {
                   Drawdown máximo
                 </p>
                 <p
-                  className={`font-body text-xl font-semibold tabular-nums ${
+                  className={`font-mono text-xl font-semibold tabular-nums ${
                     drawdown != null && drawdown < 0
                       ? 'text-alert'
                       : 'text-text-primary'
@@ -504,7 +504,7 @@ export function AtivoHistorico() {
                       {periodo}
                     </p>
                     <p
-                      className={`font-body text-sm font-semibold tabular-nums ${
+                      className={`font-mono text-sm font-semibold tabular-nums ${
                         valor == null
                           ? 'text-text-tertiary'
                           : valor >= 0
@@ -527,7 +527,7 @@ export function AtivoHistorico() {
                 <p className="text-text-secondary font-body text-xs uppercase tracking-widest mb-1">
                   Retorno do período
                 </p>
-                <p className="text-text-primary font-body text-xl font-semibold tabular-nums">
+                <p className="text-text-primary font-mono text-xl font-semibold tabular-nums">
                   {formatarPercentual(retorno)}
                 </p>
               </Card>
@@ -536,7 +536,7 @@ export function AtivoHistorico() {
                   CAGR
                 </p>
                 <p
-                  className="text-equity font-body text-xl font-semibold tabular-nums"
+                  className="text-equity font-mono text-xl font-semibold tabular-nums"
                   title={
                     cagr == null
                       ? 'Calculado apenas sobre série ajustada (pós-2010)'
@@ -551,7 +551,7 @@ export function AtivoHistorico() {
                   Volatilidade anualizada
                 </p>
                 <p
-                  className="text-text-primary font-body text-xl font-semibold tabular-nums"
+                  className="text-text-primary font-mono text-xl font-semibold tabular-nums"
                   title={
                     volatilidade == null
                       ? 'Calculado apenas sobre série ajustada (pós-2010)'
