@@ -240,9 +240,9 @@ describe('Dashboard — P&L ajustado e pré-2010', () => {
       '/eventos_corporativos?ticker=in.(BBAS3)&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc',
       'jwt',
     )
-    // 200 ações × R$15 = R$3.000; P&L = 3000 − 2500 = 500.
+    // 200 ações × R$15 = R$3.000; pnl=500, pct=20%.
     expect(texto).toContain('R$ 3.000,00')
-    expect(texto).toContain('R$ 500,00')
+    expect(texto).toContain('+20,00%')
     expect(texto).toContain('Série ajustada')
   })
 
@@ -299,7 +299,8 @@ describe('Dashboard — P&L ajustado e pré-2010', () => {
     const container = await renderDashboard()
     const texto = textoNormalizado(container)
 
-    expect(texto).toContain('R$ 100,00')
+    // pnl=100, pct=100%.
+    expect(texto).toContain('+100,00%')
     expect(texto).toContain(AVISO_PRE_2010)
   })
 
