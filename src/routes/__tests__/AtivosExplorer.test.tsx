@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AtivosExplorer } from '../AtivosExplorer'
 import { neonFetch } from '../../lib/neon'
-import type { AtivoResumo } from '../../core/ativosExplorer'
+import type { AtivoResumo, TransacaoCarteira } from '../../core/ativosExplorer'
 
 const { mockUser } = vi.hoisted(() => ({
   mockUser: { id: 'user-1', email: 'user@example.com', jwt: 'jwt' },
@@ -30,6 +30,9 @@ vi.mock('../../lib/neon', () => ({
 
 const mockNeonFetch = vi.mocked(neonFetch)
 const roots: Array<{ root: Root; container: HTMLElement }> = []
+
+const CAMPOS_RESUMO =
+  'ticker,nome,tipo,data_ultima,preco_atual,maxima_52s,minima_52s,preco_12m,retorno_12m'
 
 const ativos: AtivoResumo[] = [
   {
@@ -66,6 +69,38 @@ const ativos: AtivoResumo[] = [
     retorno_12m: null,
   },
 ]
+
+const transacoesCarteira: TransacaoCarteira[] = [
+  { ativoTicker: 'ITUB4F', quantidade: 10 },
+  { ativoTicker: 'MXRF11', quantidade: 5 },
+]
+
+const mapaAtivos = [
+  { ticker: 'ITUB4F', tickerCotacao: 'ITUB4' },
+  { ticker: 'ITUB4', tickerCotacao: 'ITUB4' },
+  { ticker: 'MXRF11', tickerCotacao: 'MXRF11' },
+  { ticker: 'PETR4', tickerCotacao: 'PETR4' },
+]
+
+function mockApi(
+  dados: {
+    ativos?: AtivoResumo[]
+    transacoes?: TransacaoCarteira[]
+    mapa?: Array<{ ticker: string; tickerCotacao: string }>
+  } = {},
+): void {
+  const {
+    ativos: lista = ativos,
+    transacoes = transacoesCarteira,
+    mapa = mapaAtivos,
+  } = dados
+  mockNeonFetch.mockImplementation((async (path: string) => {
+    if (path.startsWith('/ativos_resumo')) return lista
+    if (path.startsWith('/transacoes')) return transacoes
+    if (path.startsWith('/ativos?')) return mapa
+    throw new Error(`path inesperado: ${path}`)
+  }) as never)
+}
 
 async function renderizar(elemento: ReactElement): Promise<HTMLElement> {
   const container = document.createElement('div')
@@ -142,19 +177,29 @@ afterEach(() => {
 })
 
 describe('AtivosExplorer', () => {
-  it('carrega a view ativos_resumo e lista os ativos com link para o detalhe', async () => {
-    mockNeonFetch.mockImplementation((async () => ativos) as never)
+  it('mostra só os ativos da carteira por padrão e permite ver todos', async () => {
+    mockApi()
     const container = await renderExplorer()
 
     expect(mockNeonFetch).toHaveBeenCalledWith(
-      '/ativos_resumo?select=ticker,nome,tipo,data_ultima,preco_atual,maxima_52s,minima_52s,preco_12m,retorno_12m',
+      `/ativos_resumo?select=${CAMPOS_RESUMO}`,
       'jwt',
     )
-    const texto = container.textContent ?? ''
-    expect(texto).toContain('3 de 3 ativos')
-    expect(texto).toContain('ITUB4')
-    expect(texto).toContain('Itaú Unibanco')
-    expect(texto).toContain('MXRF11')
+    expect(mockNeonFetch).toHaveBeenCalledWith(
+      '/transacoes?userId=eq.user-1&select=ativoTicker,quantidade',
+      'jwt',
+    )
+    expect(mockNeonFetch).toHaveBeenCalledWith(
+      '/ativos?select=ticker,tickerCotacao',
+      'jwt',
+    )
+
+    // ITUB4F da transação é agrupado no ticker de cotação ITUB4.
+    expect(container.textContent).toContain('2 de 2 ativos na sua carteira')
+    expect(links(container)).toEqual(['/ativos/ITUB4', '/ativos/MXRF11'])
+
+    await clicar(container, 'Todos os ativos')
+    expect(container.textContent).toContain('3 de 3 ativos')
     expect(links(container)).toEqual([
       '/ativos/ITUB4',
       '/ativos/MXRF11',
@@ -162,22 +207,27 @@ describe('AtivosExplorer', () => {
     ])
   })
 
-  it('busca por nome sem acento e por ticker', async () => {
-    mockNeonFetch.mockImplementation((async () => ativos) as never)
+  it('busca por nome sem acento e por ticker dentro do escopo ativo', async () => {
+    mockApi()
     const container = await renderExplorer()
 
-    await digitar(container, 'petroleo')
-    expect(container.textContent).toContain('1 de 3 ativos')
-    expect(links(container)).toEqual(['/ativos/PETR4'])
+    await digitar(container, 'itau')
+    expect(links(container)).toEqual(['/ativos/ITUB4'])
 
     await digitar(container, 'mxrf')
     expect(links(container)).toEqual(['/ativos/MXRF11'])
+
+    await clicar(container, 'Todos os ativos')
+    await digitar(container, 'petroleo')
+    expect(container.textContent).toContain('1 de 3 ativos')
+    expect(links(container)).toEqual(['/ativos/PETR4'])
   })
 
   it('filtra ações e FIIs', async () => {
-    mockNeonFetch.mockImplementation((async () => ativos) as never)
+    mockApi()
     const container = await renderExplorer()
 
+    await clicar(container, 'Todos os ativos')
     await clicar(container, 'FIIs')
     expect(container.textContent).toContain('1 de 3 ativos')
     expect(links(container)).toEqual(['/ativos/MXRF11'])
@@ -188,9 +238,10 @@ describe('AtivosExplorer', () => {
   })
 
   it('ordena por retorno 12m, deixando nulos por último, e por ticker', async () => {
-    mockNeonFetch.mockImplementation((async () => ativos) as never)
+    mockApi()
     const container = await renderExplorer()
 
+    await clicar(container, 'Todos os ativos')
     await selecionar(container, 'retorno12m')
     expect(links(container)).toEqual([
       '/ativos/ITUB4',
@@ -206,10 +257,29 @@ describe('AtivosExplorer', () => {
     ])
   })
 
-  it('mostra estado vazio quando nenhum ativo casa com os filtros', async () => {
-    mockNeonFetch.mockImplementation((async () => ativos) as never)
+  it('mostra estado vazio quando o usuário não possui ativos e oferece ver todos', async () => {
+    mockApi({ transacoes: [] })
     const container = await renderExplorer()
 
+    expect(container.textContent).toContain(
+      'Você ainda não possui ativos na carteira.',
+    )
+    expect(container.textContent).toContain('0 de 0 ativos na sua carteira')
+
+    await clicar(container, 'Ver todos os ativos')
+    expect(container.textContent).toContain('3 de 3 ativos')
+    expect(links(container)).toEqual([
+      '/ativos/ITUB4',
+      '/ativos/MXRF11',
+      '/ativos/PETR4',
+    ])
+  })
+
+  it('mostra estado vazio quando nenhum ativo casa com os filtros', async () => {
+    mockApi()
+    const container = await renderExplorer()
+
+    await clicar(container, 'Todos os ativos')
     await digitar(container, 'inexistente')
     expect(container.textContent).toContain('0 de 3 ativos')
     expect(container.textContent).toContain(
@@ -218,17 +288,20 @@ describe('AtivosExplorer', () => {
   })
 
   it('mostra estado vazio quando o banco não tem ativos', async () => {
-    mockNeonFetch.mockImplementation((async () => []) as never)
+    mockApi({ ativos: [], transacoes: [], mapa: [] })
     const container = await renderExplorer()
 
-    expect(container.textContent).toContain('0 de 0 ativos')
+    expect(container.textContent).toContain('0 de 0 ativos na sua carteira')
     expect(container.textContent).toContain(
       'Nenhum ativo disponível no banco.',
     )
+    expect(container.textContent).not.toContain('Ver todos os ativos')
   })
 
   it('mostra erro de carregamento', async () => {
-    mockNeonFetch.mockImplementation((async () => { throw new Error('Neon API error 500') }) as never)
+    mockNeonFetch.mockImplementation((async () => {
+      throw new Error('Neon API error 500')
+    }) as never)
     const container = await renderExplorer()
 
     expect(container.textContent).toContain('Neon API error 500')

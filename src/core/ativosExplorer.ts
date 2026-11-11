@@ -14,6 +14,7 @@ export interface AtivoResumo {
 }
 
 export type FiltroTipo = 'TODOS' | TipoAtivo
+export type FiltroEscopo = 'CARTEIRA' | 'TODOS'
 export type OrdemAtivos = 'nome' | 'ticker' | 'retorno12m'
 
 export const FILTROS_TIPO: Array<{ valor: FiltroTipo; rotulo: string }> = [
@@ -21,6 +22,49 @@ export const FILTROS_TIPO: Array<{ valor: FiltroTipo; rotulo: string }> = [
   { valor: 'ACAO', rotulo: 'Ações' },
   { valor: 'FII', rotulo: 'FIIs' },
 ]
+
+export const FILTROS_ESCOPO: Array<{ valor: FiltroEscopo; rotulo: string }> = [
+  { valor: 'CARTEIRA', rotulo: 'Minha carteira' },
+  { valor: 'TODOS', rotulo: 'Todos os ativos' },
+]
+
+/** Campos de `transacoes` necessários para saber o que o usuário possui. */
+export interface TransacaoCarteira {
+  ativoTicker: string
+  quantidade: number
+}
+
+/**
+ * Tickers com saldo positivo na carteira do usuário.
+ * Quantidades são somadas por ticker de cotação (transações fracionárias são
+ * agrupadas no ticker padrão). Vendas (`quantidade` negativa) reduzem o saldo;
+ * posições zeradas ou negativas ficam de fora.
+ */
+export function tickersDaCarteira(
+  transacoes: TransacaoCarteira[],
+  tickerCotacaoPorTicker: Record<string, string> = {},
+): Set<string> {
+  const saldos = new Map<string, number>()
+  for (const transacao of transacoes) {
+    const ticker =
+      tickerCotacaoPorTicker[transacao.ativoTicker] ?? transacao.ativoTicker
+    saldos.set(ticker, (saldos.get(ticker) ?? 0) + transacao.quantidade)
+  }
+  return new Set(
+    [...saldos.entries()]
+      .filter(([, quantidade]) => quantidade > 0)
+      .map(([ticker]) => ticker),
+  )
+}
+
+export function filtrarPorEscopo(
+  ativos: AtivoResumo[],
+  tickersCarteira: ReadonlySet<string>,
+  escopo: FiltroEscopo,
+): AtivoResumo[] {
+  if (escopo === 'TODOS') return ativos
+  return ativos.filter((ativo) => tickersCarteira.has(ativo.ticker))
+}
 
 export const ORDENS_ATIVOS: Array<{ valor: OrdemAtivos; rotulo: string }> = [
   { valor: 'nome', rotulo: 'Nome' },
