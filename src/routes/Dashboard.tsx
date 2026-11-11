@@ -88,6 +88,9 @@ export function Dashboard() {
           <span className="font-display font-semibold text-text-primary text-lg">Meus Ativos</span>
         </div>
         <div className="flex items-center gap-2">
+          <Link to="/ativos">
+            <Button variant="secondary" className="h-9 px-3 text-xs">Ativos</Button>
+          </Link>
           <Link to="/transactions">
             <Button variant="secondary" className="h-9 px-3 text-xs">Transações</Button>
           </Link>
