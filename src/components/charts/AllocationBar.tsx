@@ -40,33 +40,6 @@ function TickerTick({ x, y, payload, navigate }: TickerTickProps) {
   )
 }
 
-function TickerTickAngled({ x, y, payload, navigate }: TickerTickProps) {
-  if (x == null || y == null || !payload?.value) return null
-  const ticker = payload.value
-  return (
-    <a
-      href={`/ativos/${ticker}`}
-      onClick={(event) => {
-        event.preventDefault()
-        navigate(`/ativos/${ticker}`)
-      }}
-      aria-label={`Abrir histórico de ${ticker}`}
-    >
-      <text
-        x={x}
-        y={y}
-        dy={12}
-        textAnchor="end"
-        fill="#a0a0a0"
-        fontSize={10}
-        transform={`rotate(-30 ${x} ${y})`}
-        style={{ cursor: 'pointer' }}
-      >
-        {ticker}
-      </text>
-    </a>
-  )
-}
 
 export function AllocationBar({ resultados, mode }: Props) {
   const navigate = useNavigate()
@@ -107,14 +80,15 @@ export function AllocationBar({ resultados, mode }: Props) {
 
   return (
     <ChartCard title="Cotas por Ativo">
-      <ResponsiveContainer width="100%" height={220}>
-        <BarChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
-          <XAxis
+      <ResponsiveContainer width="100%" height={Math.max(220, data.length * 32 + 60)}>
+        <BarChart data={data} layout="vertical" margin={{ top: 8, right: 20, bottom: 8, left: 8 }}>
+          <XAxis type="number" tick={{ fill: '#a0a0a0', fontSize: 11 }} />
+          <YAxis
             dataKey="ticker"
-            tick={<TickerTickAngled navigate={navigate} />}
-            interval={0}
+            type="category"
+            tick={<TickerTick navigate={navigate} />}
+            width={76}
           />
-          <YAxis tick={{ fill: '#a0a0a0', fontSize: 11 }} />
           <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR')} />
           <Bar dataKey="value">
             {data.map((entry, i) => (

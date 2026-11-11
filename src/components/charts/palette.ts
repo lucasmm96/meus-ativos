@@ -1,16 +1,26 @@
-export const TICKER_PALETTE = [
-  '#6cba3b', // green  (posição 0 — BBAS3 no alfabeto dos 11 tickers)
-  '#4285f4', // blue   (posição 1 — BBSE3)
-  '#f4a842', // amber  (posição 2 — HGLG11)
-  '#e05c5c', // rose   (posição 3 — ITSA4)
-  '#a855f7', // purple (posição 4 — MXRF11)
-  '#14b8a6', // teal   (posição 5 — PETR4)
-  '#f59e0b', // yellow (posição 6 — PVBI11)
-  '#06b6d4', // cyan   (posição 7 — RBRP11)
-  '#ec4899', // pink   (posição 8 — TAEE11)
-  '#84cc16', // lime   (posição 9 — VALE3)
-  '#f97316', // orange (posição 10 — XPML11)
-  '#8b5cf6', // violet (reserva)
+// 20 cores perceptualmente distintas — sem repetições para carteiras de até 20 ativos.
+// Para n > 20, geração por ângulo dourado garante separação máxima sem repeti.
+const TICKER_PALETTE = [
+  'hsl(211,78%,57%)',  // blue
+  'hsl(145,59%,43%)',  // green
+  'hsl(30,90%,55%)',   // orange
+  'hsl(300,52%,55%)',  // purple
+  'hsl(4,68%,56%)',    // red
+  'hsl(174,65%,42%)',  // teal
+  'hsl(44,90%,52%)',   // amber
+  'hsl(330,68%,56%)',  // pink
+  'hsl(194,74%,46%)',  // cyan
+  'hsl(80,58%,47%)',   // lime
+  'hsl(258,58%,62%)',  // violet
+  'hsl(16,78%,52%)',   // deep orange
+  'hsl(232,53%,52%)',  // indigo
+  'hsl(161,58%,42%)',  // seafoam
+  'hsl(348,64%,53%)',  // rose
+  'hsl(55,78%,46%)',   // yellow
+  'hsl(188,70%,48%)',  // aqua
+  'hsl(272,62%,58%)',  // lavender
+  'hsl(118,52%,44%)',  // forest green
+  'hsl(22,74%,50%)',   // burnt orange
 ]
 
 /**
@@ -20,5 +30,11 @@ export const TICKER_PALETTE = [
  */
 export function tickerColor(sortedTickers: string[], ticker: string): string {
   const idx = sortedTickers.indexOf(ticker)
-  return TICKER_PALETTE[(idx < 0 ? 0 : idx) % TICKER_PALETTE.length]
+  const i = idx < 0 ? 0 : idx
+  if (i < TICKER_PALETTE.length) return TICKER_PALETTE[i]
+  // Ângulo dourado (137.508°): separação máxima para n arbitrário
+  const hue = Math.round((i * 137.508) % 360)
+  const sat = 60 + (i % 3) * 6
+  const lgt = 50 + (i % 2) * 7
+  return `hsl(${hue}, ${sat}%, ${lgt}%)`
 }

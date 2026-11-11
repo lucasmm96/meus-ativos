@@ -15,14 +15,14 @@ export function AllocationPie({ resultados, mode }: Props) {
 
   return (
     <ChartCard title={mode === 'valor' ? 'Alocação — Valor' : 'Alocação — Cotas'}>
-      <ResponsiveContainer width="100%" height={280}>
+      <ResponsiveContainer width="100%" height={340}>
         <PieChart>
           <Pie
             data={data}
             dataKey="value"
             nameKey="name"
             cx="50%"
-            cy="45%"
+            cy="38%"
             outerRadius={90}
           >
             {data.map((entry, i) => (
