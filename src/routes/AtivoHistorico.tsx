@@ -148,7 +148,7 @@ export function AtivoHistorico() {
 
         const [cotacoes, eventosData] = await Promise.all([
           neonFetch<CotacaoAjustada[]>(
-            `/cotacoes_ajustadas?ativoTicker=eq.${encodeURIComponent(tickerCotacao)}&order=data.asc`,
+            `/cotacoes_ajustadas?ativoTicker=eq.${encodeURIComponent(tickerCotacao)}&select=ativoTicker,data,preco_ajustado,fator_divisor,confiabilidade&order=data.asc`,
             user!.jwt,
           ),
           neonFetch<EventoCorporativo[]>(urlEventos, user!.jwt),

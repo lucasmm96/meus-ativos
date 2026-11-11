@@ -79,6 +79,33 @@ describe('montarUrlCotacoesAjustadas', () => {
   it('retorna null sem tickers, sinalizando que nenhuma query deve ser feita', () => {
     expect(montarUrlCotacoesAjustadas([])).toBeNull()
   })
+
+  it('adiciona filtro de data quando desde é fornecido', () => {
+    expect(montarUrlCotacoesAjustadas(['VALE3'], { desde: '2020-01-02' })).toBe(
+      '/cotacoes_ajustadas?ativoTicker=in.(VALE3)&data=gte.2020-01-02&order=data.asc',
+    )
+  })
+
+  it('adiciona select quando colunas são fornecidas', () => {
+    expect(
+      montarUrlCotacoesAjustadas(['VALE3'], {
+        select: ['ativoTicker', 'data', 'preco_ajustado'],
+      }),
+    ).toBe(
+      '/cotacoes_ajustadas?ativoTicker=in.(VALE3)&select=ativoTicker,data,preco_ajustado&order=data.asc',
+    )
+  })
+
+  it('combina desde e select na mesma URL', () => {
+    expect(
+      montarUrlCotacoesAjustadas(['VALE3', 'PETR4'], {
+        desde: '2018-05-10',
+        select: ['ativoTicker', 'data', 'preco_ajustado', 'confiabilidade'],
+      }),
+    ).toBe(
+      '/cotacoes_ajustadas?ativoTicker=in.(VALE3,PETR4)&data=gte.2018-05-10&select=ativoTicker,data,preco_ajustado,confiabilidade&order=data.asc',
+    )
+  })
 })
 
 describe('mapearPrecoAjustadoMaisRecente', () => {

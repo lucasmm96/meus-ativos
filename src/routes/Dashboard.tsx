@@ -48,7 +48,11 @@ export function Dashboard() {
         }))
 
         const tickers = extrairTickersUnicos(txs)
-        const urlCotacoes = montarUrlCotacoesAjustadas(tickers)
+        const dataMin = txs.reduce((min, t) => (t.data < min ? t.data : min), txs[0]?.data ?? '')
+        const urlCotacoes = montarUrlCotacoesAjustadas(tickers, {
+          desde: dataMin || undefined,
+          select: ['ativoTicker', 'data', 'preco_ajustado', 'confiabilidade'],
+        })
         if (!urlCotacoes) {
           setResultados([])
           setEvolutionData([])

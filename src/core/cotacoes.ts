@@ -27,13 +27,22 @@ export function extrairTickersUnicos(
  * URL PostgREST da série ajustada apenas para os tickers informados.
  * Retorna null quando não há tickers — nesse caso nenhuma query deve
  * ser feita.
+ *
+ * opcoes.desde: filtra data >= valor (ISO), eliminando histórico anterior
+ *   à primeira transação do usuário (que o cliente já ignoraria).
+ * opcoes.select: lista de colunas a retornar; omitir devolve todas.
  */
 export function montarUrlCotacoesAjustadas(
   tickers: readonly string[],
+  opcoes?: { desde?: string; select?: readonly string[] },
 ): string | null {
   const unicos = [...new Set(tickers.filter((ticker) => ticker.length > 0))]
   if (unicos.length === 0) return null
-  return `/cotacoes_ajustadas?ativoTicker=in.(${unicos.join(',')})&order=data.asc`
+  let url = `/cotacoes_ajustadas?ativoTicker=in.(${unicos.join(',')})`
+  if (opcoes?.desde) url += `&data=gte.${opcoes.desde}`
+  if (opcoes?.select?.length) url += `&select=${opcoes.select.join(',')}`
+  url += '&order=data.asc'
+  return url
 }
 
 /**

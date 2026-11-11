@@ -167,7 +167,7 @@ describe('Dashboard — cotações ajustadas', () => {
     const container = await renderDashboard()
 
     expect(mockNeonFetch).toHaveBeenCalledWith(
-      '/cotacoes_ajustadas?ativoTicker=in.(VALE3,PETR4)&order=data.asc',
+      '/cotacoes_ajustadas?ativoTicker=in.(VALE3,PETR4)&data=gte.2019-01-02&select=ativoTicker,data,preco_ajustado,confiabilidade&order=data.asc',
       'jwt',
     )
     expect(
@@ -201,7 +201,7 @@ describe('Dashboard — cotações ajustadas', () => {
     await renderDashboard()
 
     expect(mockNeonFetch).toHaveBeenCalledWith(
-      '/cotacoes_ajustadas?ativoTicker=in.(VALE3)&order=data.asc',
+      '/cotacoes_ajustadas?ativoTicker=in.(VALE3)&data=gte.2020-01-02&select=ativoTicker,data,preco_ajustado,confiabilidade&order=data.asc',
       'jwt',
     )
   })
