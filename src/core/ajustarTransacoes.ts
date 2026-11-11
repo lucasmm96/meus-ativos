@@ -35,7 +35,7 @@ export function fatoresPorTransacao(
 
     let fator = new Decimal(1)
     for (const ev of eventos) {
-      if (ev.ticker !== tx.ativoTicker) continue
+      if (ev.ticker !== tx.ativoTicker && ev.ticker !== tx.tickerCotacao) continue
       if (ev.data_efetiva <= tx.data) continue
       if (ev.fator_ajuste === null || ev.fator_ajuste === undefined) continue
 

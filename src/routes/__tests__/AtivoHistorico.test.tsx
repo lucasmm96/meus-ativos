@@ -80,12 +80,15 @@ function evento(
 function mockApi(
   cotacoes: CotacaoAjustada[],
   eventos: EventoCorporativo[],
-  ativo: { ticker: string; nome: string; tipo: 'ACAO' | 'FII' } | null,
+  ativo: { ticker: string; nome: string; tipo: 'ACAO' | 'FII'; tickerCotacao?: string } | null,
 ) {
   mockNeonFetch.mockImplementation((async (path: string) => {
     if (path.startsWith('/cotacoes_ajustadas')) return cotacoes
     if (path.startsWith('/eventos_corporativos')) return eventos
-    if (path.startsWith('/ativos')) return ativo ? [ativo] : []
+    if (path.startsWith('/ativos')) {
+      if (!ativo) return []
+      return [{ tickerCotacao: ativo.ticker, ...ativo }]
+    }
     throw new Error(`path inesperado: ${path}`)
   }) as never)
 }
@@ -328,6 +331,22 @@ describe('AtivoHistorico', () => {
     )
     expect(texto).toContain('Série bruta — sem ajuste por eventos')
     expect(texto).not.toContain('Série pode não estar ajustada')
+  })
+
+  it('ticker alias: busca cotações pelo tickerCotacao e eventos para ambos os tickers', async () => {
+    // CPLE6 é alias de CPLE3; cotações estão armazenadas sob CPLE3.
+    mockApi(
+      [cotacao('CPLE3', '2026-01-02', '12', 'alta')],
+      [evento('SPLIT', '2021-10-04', 10)],
+      { ticker: 'CPLE6', nome: 'Copel PN', tipo: 'ACAO', tickerCotacao: 'CPLE3' },
+    )
+
+    await renderRoute('CPLE6')
+
+    const paths = mockNeonFetch.mock.calls.map(([path]) => path)
+    expect(paths.some((p) => p.includes('ativoTicker=eq.CPLE3'))).toBe(true)
+    expect(paths.some((p) => p.includes('ativoTicker=eq.CPLE6'))).toBe(false)
+    expect(paths.some((p) => p.includes('ticker=in.(CPLE6,CPLE3)'))).toBe(true)
   })
 })
 

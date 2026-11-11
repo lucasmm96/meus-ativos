@@ -13,6 +13,7 @@ interface AtivoMock {
   tickerCotacao: string
   tipo: 'ACAO' | 'FII'
   nome: string
+  negociavel: boolean
 }
 
 const ativosPadrao: AtivoMock[] = [
@@ -21,6 +22,7 @@ const ativosPadrao: AtivoMock[] = [
     tickerCotacao: 'BBAS3',
     tipo: 'ACAO',
     nome: 'Banco do Brasil',
+    negociavel: true,
   },
 ]
 
@@ -30,12 +32,14 @@ const ativosImportacao: AtivoMock[] = [
     tickerCotacao: 'ITSA4',
     tipo: 'ACAO',
     nome: 'Itaúsa',
+    negociavel: true,
   },
   {
     ticker: 'SAPR4F',
     tickerCotacao: 'SAPR4',
     tipo: 'ACAO',
     nome: 'Sanepar',
+    negociavel: true,
   },
 ]
 
@@ -209,6 +213,42 @@ describe('Transactions — eventos corporativos e pré-2010', () => {
       '/eventos_corporativos?ticker=in.(BBAS3)&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc',
       'jwt',
     )
+  })
+
+  it('ticker alias: busca eventos para ativoTicker e tickerCotacao', async () => {
+    // CPLE6 é alias de CPLE3; evento pode estar armazenado sob CPLE3.
+    const ativosAlias: AtivoMock[] = [
+      { ticker: 'CPLE6', tickerCotacao: 'CPLE3', tipo: 'ACAO', nome: 'Copel PN', negociavel: false },
+    ]
+    mockApi(
+      [transacao({ ativoTicker: 'CPLE6' })],
+      [],
+      [],
+      ativosAlias,
+    )
+
+    await renderTransactions()
+
+    const paths = mockNeonFetch.mock.calls.map(([path]) => path)
+    expect(paths.some((p) => p.includes('ticker=in.(CPLE6,CPLE3)'))).toBe(true)
+  })
+
+  it('ticker alias (negociavel=false): não aparece no dropdown do formulário', async () => {
+    const ativosComAlias: AtivoMock[] = [
+      { ticker: 'CPLE3', tickerCotacao: 'CPLE3', tipo: 'ACAO', nome: 'Copel ON', negociavel: true },
+      { ticker: 'CPLE6', tickerCotacao: 'CPLE3', tipo: 'ACAO', nome: 'Copel PN', negociavel: false },
+    ]
+    mockApi([], [], [], ativosComAlias)
+
+    const container = await renderTransactions()
+    await clicar(container, 'Nova Transação')
+
+    const opcoes = Array.from(
+      container.querySelectorAll('select option'),
+    ).map((o) => o.textContent ?? '')
+
+    expect(opcoes.some((o) => o.includes('CPLE3'))).toBe(true)
+    expect(opcoes.some((o) => o.includes('CPLE6'))).toBe(false)
   })
 
   it('não busca eventos quando não há transações', async () => {

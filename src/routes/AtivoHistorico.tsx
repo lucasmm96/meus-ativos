@@ -133,24 +133,30 @@ export function AtivoHistorico() {
       setLoading(true)
       setError('')
       try {
-        const [cotacoes, eventosData, ativosData] = await Promise.all([
+        const ativosData = await neonFetch<AtivoInfo[]>(
+          `/ativos?ticker=eq.${encodeURIComponent(ticker)}&select=ticker,nome,tipo,"tickerCotacao"`,
+          user!.jwt,
+        )
+        if (cancelado) return
+        const ativoInfo = ativosData[0] ?? null
+        const tickerCotacao = ativoInfo?.tickerCotacao ?? ticker
+        const isAlias = tickerCotacao !== ticker
+
+        const urlEventos = isAlias
+          ? `/eventos_corporativos?ticker=in.(${encodeURIComponent(ticker)},${encodeURIComponent(tickerCotacao)})&order=data_efetiva.asc&select=tipo,data_efetiva,descricao,ticker_relacionado,fator_ajuste`
+          : `/eventos_corporativos?ticker=eq.${encodeURIComponent(ticker)}&order=data_efetiva.asc&select=tipo,data_efetiva,descricao,ticker_relacionado,fator_ajuste`
+
+        const [cotacoes, eventosData] = await Promise.all([
           neonFetch<CotacaoAjustada[]>(
-            `/cotacoes_ajustadas?ativoTicker=eq.${encodeURIComponent(ticker)}&order=data.asc`,
+            `/cotacoes_ajustadas?ativoTicker=eq.${encodeURIComponent(tickerCotacao)}&order=data.asc`,
             user!.jwt,
           ),
-          neonFetch<EventoCorporativo[]>(
-            `/eventos_corporativos?ticker=eq.${encodeURIComponent(ticker)}&order=data_efetiva.asc&select=tipo,data_efetiva,descricao,ticker_relacionado,fator_ajuste`,
-            user!.jwt,
-          ),
-          neonFetch<AtivoInfo[]>(
-            `/ativos?ticker=eq.${encodeURIComponent(ticker)}&select=ticker,nome,tipo`,
-            user!.jwt,
-          ),
+          neonFetch<EventoCorporativo[]>(urlEventos, user!.jwt),
         ])
         if (cancelado) return
         setDados(cotacoes)
         setEventos(eventosData)
-        setAtivo(ativosData[0] ?? null)
+        setAtivo(ativoInfo)
       } catch (e) {
         if (!cancelado) setError(String(e))
       } finally {

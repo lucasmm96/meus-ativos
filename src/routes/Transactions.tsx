@@ -28,6 +28,7 @@ interface Ativo {
   tickerCotacao: string
   tipo: TipoAtivo
   nome: string
+  negociavel: boolean
 }
 
 type FilterType = 'all' | 'ACAO' | 'FII' | 'archived'
@@ -89,7 +90,7 @@ export function Transactions() {
     try {
       const [rows, ativosData, arquivamentos] = await Promise.all([
         neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user.id}&select=*&order=data.desc`, user.jwt),
-        neonFetch<Ativo[]>('/ativos?select=ticker,tickerCotacao,tipo,nome', user.jwt),
+        neonFetch<Ativo[]>('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user.jwt),
         neonFetch<{ transacaoId: string }[]>(`/arquivamentos?userId=eq.${user.id}&select=transacaoId`, user.jwt),
       ])
       const ativosMap = Object.fromEntries(ativosData.map(a => [a.ticker, a]))
@@ -102,7 +103,13 @@ export function Transactions() {
       setAtivos(ativosData)
       setArchived(new Set(arquivamentos.map(a => a.transacaoId)))
 
-      const tickersEventos = [...new Set(txs.map(t => t.ativoTicker))]
+      const tickersEventos = [
+        ...new Set(txs.flatMap(t =>
+          t.ativoTicker === t.tickerCotacao
+            ? [t.ativoTicker]
+            : [t.ativoTicker, t.tickerCotacao],
+        )),
+      ]
       if (tickersEventos.length > 0) {
         const eventosData = await neonFetch<EventoAjuste[]>(
           `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`,
@@ -610,7 +617,7 @@ export function Transactions() {
                     className="w-full h-12 bg-bg-base border border-border-subtle text-text-primary font-body text-sm rounded-xl px-4 appearance-none outline-none focus:border-yield transition-colors disabled:opacity-50"
                   >
                     <option value="" disabled>Selecione um ativo...</option>
-                    {ativos.map(a => (
+                    {ativos.filter(a => a.negociavel).map(a => (
                       <option key={a.ticker} value={a.ticker}>
                         [{a.tipo === 'ACAO' ? 'Ação' : 'FII'}] {a.ticker} — {a.nome}
                       </option>

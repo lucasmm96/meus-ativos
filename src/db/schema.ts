@@ -50,6 +50,8 @@ export const ativos = pgTable('ativos', {
   tipo: tipoAtivo('tipo').notNull(),
   /** Ticker used for price lookup — same as ticker but without the "F" suffix for fractional shares */
   tickerCotacao: varchar('tickerCotacao', { length: 10 }).notNull(),
+  /** true = actively traded; false = alias row for an extinct/renamed ticker */
+  negociavel: boolean('negociavel').notNull().default(true),
 });
 
 export const transacoes = pgTable('transacoes', {

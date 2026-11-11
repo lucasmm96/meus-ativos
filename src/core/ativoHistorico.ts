@@ -36,6 +36,7 @@ export interface AtivoInfo {
   ticker: string
   nome: string
   tipo: TipoAtivo
+  tickerCotacao: string
 }
 
 export type Periodo = '1M' | '6M' | '1A' | '5A' | 'Tudo'

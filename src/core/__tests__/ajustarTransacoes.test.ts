@@ -102,6 +102,14 @@ describe('fatoresPorTransacao', () => {
     expect(fatores.get('tx-1')).toBe(1)
   })
 
+  it('aplica evento armazenado sob o tickerCotacao (alias/ticker extinto)', () => {
+    // CPLE6 é alias de CPLE3; evento de split foi registrado sob CPLE3.
+    const tx = transacao({ ativoTicker: 'CPLE6', tickerCotacao: 'CPLE3' })
+    const ev = evento({ ticker: 'CPLE3', data_efetiva: '2024-04-16', fator_ajuste: '10' })
+    const fatores = fatoresPorTransacao([tx], [ev])
+    expect(fatores.get('tx-1')).toBe(10)
+  })
+
   it('ignora eventos sem fator válido', () => {
     const fatores = fatoresPorTransacao(
       [transacao()],

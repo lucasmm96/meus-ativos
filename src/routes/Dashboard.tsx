@@ -56,7 +56,13 @@ export function Dashboard() {
           return
         }
 
-        const tickersEventos = [...new Set(txs.map(t => t.ativoTicker))]
+        const tickersEventos = [
+          ...new Set(txs.flatMap(t =>
+            t.ativoTicker === t.tickerCotacao
+              ? [t.ativoTicker]
+              : [t.ativoTicker, t.tickerCotacao],
+          )),
+        ]
         const urlEventos = `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`
 
         const [cotacoes, eventos] = await Promise.all([

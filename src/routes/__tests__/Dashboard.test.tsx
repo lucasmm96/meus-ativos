@@ -289,4 +289,27 @@ describe('Dashboard — P&L ajustado e pré-2010', () => {
     expect(texto).toContain('R$ 100,00')
     expect(texto).toContain(AVISO_PRE_2010)
   })
+
+  it('ticker alias: busca eventos para ativoTicker e tickerCotacao', async () => {
+    // CPLE6 é alias de CPLE3; evento de split foi registrado sob CPLE3.
+    mockApi(
+      [
+        {
+          id: 'tx-1',
+          userId: 'user-1',
+          ativoTicker: 'CPLE6',
+          data: '2020-01-02',
+          valorUnitario: '30',
+          quantidade: 100,
+        },
+      ],
+      [{ ticker: 'CPLE6', tickerCotacao: 'CPLE3', tipo: 'ACAO' }],
+      [cotacao('CPLE3', '2026-01-02', '12', '12')],
+    )
+
+    await renderDashboard()
+
+    const paths = mockNeonFetch.mock.calls.map(([path]) => path)
+    expect(paths.some((p) => p.includes('ticker=in.(CPLE6,CPLE3)'))).toBe(true)
+  })
 })
