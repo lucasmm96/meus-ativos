@@ -810,7 +810,7 @@ export function Transactions() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Link
                             to={`/ativos/${tx.tickerCotacao}`}
-                            className="font-display font-semibold text-text-primary hover:text-equity transition-colors"
+                            className="font-sans font-semibold text-text-primary hover:text-equity transition-colors"
                             title={`Ver histórico de ${tx.tickerCotacao}`}
                           >
                             {tx.ativoTicker}
