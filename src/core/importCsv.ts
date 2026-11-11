@@ -4,13 +4,12 @@ import type { TipoAtivo } from './types'
 export const COLUNAS_IMPORTACAO = [
   'DATA',
   'TICKER',
-  'TIPO',
   'VALOR',
   'QUANTIDADE',
 ] as const
 
 export const NOME_MODELO_IMPORTACAO = 'modelo-importacao.csv'
-export const LINHA_EXEMPLO_IMPORTACAO = '2023-09-11;ITSA4F;ACAO;9,07;22'
+export const LINHA_EXEMPLO_IMPORTACAO = '2023-09-11;ITSA4F;9,07;22'
 
 export interface AtivoImportacao {
   ticker: string
@@ -264,7 +263,7 @@ export function importarCsv(
       continue
     }
 
-    const [data, tickerBruto, tipoBruto, valorBruto, quantidadeBruto] =
+    const [data, tickerBruto, valorBruto, quantidadeBruto] =
       campos.map((campo) => campo.trim())
     let linhaInvalida = false
     const adicionarErro = (mensagem: string) => {
@@ -284,22 +283,6 @@ export function importarCsv(
       adicionarErro(`TICKER não encontrado no cadastro: ${tickerBruto}.`)
     }
 
-    const tipoBrutoNormalizado = tipoBruto.toUpperCase()
-    let tipo: TipoAtivo | null = null
-    if (
-      tipoBrutoNormalizado !== 'ACAO' &&
-      tipoBrutoNormalizado !== 'FII'
-    ) {
-      adicionarErro(`TIPO inválido: "${tipoBruto}". Use ACAO ou FII.`)
-    } else {
-      tipo = tipoBrutoNormalizado
-      if (ativo && ativo.tipo !== tipo) {
-        adicionarErro(
-          `TIPO ${tipo} não corresponde ao cadastro de ${ativo.ticker} (${ativo.tipo}).`,
-        )
-      }
-    }
-
     const valor = normalizarValor(valorBruto)
     if (valor.erro) adicionarErro(valor.erro)
 
@@ -315,7 +298,7 @@ export function importarCsv(
       }
     }
 
-    if (linhaInvalida || !ativo || !valor.valor || !tipo) continue
+    if (linhaInvalida || !ativo || !valor.valor) continue
 
     const chave = chaveTransacao(ativo.ticker, data, valor.valor, quantidade)
     if (chave && existentesSet.has(chave)) {
@@ -331,7 +314,7 @@ export function importarCsv(
     resultado.linhas.push({
       linha,
       ativoTicker: ativo.ticker,
-      tipo,
+      tipo: ativo.tipo,
       data,
       valorUnitario: valor.valor,
       quantidade,

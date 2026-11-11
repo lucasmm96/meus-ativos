@@ -426,9 +426,9 @@ describe('Transactions — export CSV', () => {
     const conteudo = await lerBlob(blob)
     expect(conteudo.startsWith('﻿')).toBe(true)
     expect(conteudo.replace(/^﻿/, '').split('\n')[0]).toBe(
-      'data,ativoTicker,tipo,quantidade,valorUnitario,confiabilidade,aviso',
+      'data,ativoTicker,quantidade,valorUnitario,confiabilidade,aviso',
     )
-    expect(conteudo).toContain('2009-12-31,BBAS3,ACAO,10,25,baixa,')
+    expect(conteudo).toContain('2009-12-31,BBAS3,10,25,baixa,')
 
     expect(clickSpy).toHaveBeenCalled()
     const anchor = createElementSpy.mock.results
@@ -501,9 +501,9 @@ describe('Transactions — import CSV', () => {
     await selecionarArquivo(
       container,
       [
-        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
-        '2023-09-11;ITSA4F;ACAO;9,07;22',
-        '2023-09-12;SAPR4F;ACAO;4,65;43',
+        'DATA;TICKER;VALOR;QUANTIDADE',
+        '2023-09-11;ITSA4F;9,07;22',
+        '2023-09-12;SAPR4F;4,65;43',
       ].join('\n'),
       'carteira.csv',
     )
@@ -539,9 +539,9 @@ describe('Transactions — import CSV', () => {
     await selecionarArquivo(
       container,
       [
-        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
-        '2023-02-30;ITSA4F;ACAO;9,07;22',
-        '2023-09-11;XPTO;ACAO;9,07;22',
+        'DATA;TICKER;VALOR;QUANTIDADE',
+        '2023-02-30;ITSA4F;9,07;22',
+        '2023-09-11;XPTO;9,07;22',
       ].join('\n'),
     )
 
@@ -578,8 +578,8 @@ describe('Transactions — import CSV', () => {
     await selecionarArquivo(
       container,
       [
-        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
-        '2023-09-11;ITSA4F;ACAO;9,070000;22',
+        'DATA;TICKER;VALOR;QUANTIDADE',
+        '2023-09-11;ITSA4F;9,070000;22',
       ].join('\n'),
     )
 
@@ -598,8 +598,8 @@ describe('Transactions — import CSV', () => {
     await selecionarArquivo(
       container,
       [
-        'DATA;TICKER;TIPO;VALOR;QUANTIDADE',
-        '2023-09-12;SAPR4F;ACAO;4,65;43',
+        'DATA;TICKER;VALOR;QUANTIDADE',
+        '2023-09-12;SAPR4F;4,65;43',
       ].join('\n'),
     )
 

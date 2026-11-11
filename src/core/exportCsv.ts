@@ -3,7 +3,6 @@ import { AVISO_CSV_PRE_2010, type TransacaoAjustada } from './ajustarTransacoes'
 export const COLUNAS_CSV = [
   'data',
   'ativoTicker',
-  'tipo',
   'quantidade',
   'valorUnitario',
   'confiabilidade',
@@ -31,7 +30,6 @@ export function transacoesParaCsv(transacoes: TransacaoAjustada[]): string {
       [
         tx.data,
         tx.ativoTicker,
-        tx.tipo,
         String(tx.quantidadeAjustada),
         tx.valorUnitarioAjustado,
         pre2010 ? 'baixa' : 'alta',

@@ -25,13 +25,13 @@ function linhas(csv: string): string[] {
 }
 
 describe('transacoesParaCsv', () => {
-  it('começa com BOM e cabeçalho com as 7 colunas na ordem exigida', () => {
+  it('começa com BOM e cabeçalho com as 6 colunas na ordem exigida', () => {
     const csv = transacoesParaCsv([])
     expect(csv.startsWith('﻿')).toBe(true)
     expect(linhas(csv)[0]).toBe(
-      'data,ativoTicker,tipo,quantidade,valorUnitario,confiabilidade,aviso',
+      'data,ativoTicker,quantidade,valorUnitario,confiabilidade,aviso',
     )
-    expect(COLUNAS_CSV).toHaveLength(7)
+    expect(COLUNAS_CSV).toHaveLength(6)
   })
 
   it('exporta quantidade e preço ajustados', () => {
@@ -47,7 +47,7 @@ describe('transacoesParaCsv', () => {
       ],
     )
     const csv = transacoesParaCsv([ajustada])
-    expect(linhas(csv)[1]).toBe('2023-01-02,BBAS3,ACAO,200,12.5,alta,')
+    expect(linhas(csv)[1]).toBe('2023-01-02,BBAS3,200,12.5,alta,')
   })
 
   it('marca confiabilidade baixa e aviso para data anterior a 2010', () => {
@@ -57,7 +57,7 @@ describe('transacoesParaCsv', () => {
     )
     const csv = transacoesParaCsv([ajustada])
     expect(linhas(csv)[1]).toBe(
-      `2009-12-31,BBAS3,ACAO,10,25,baixa,${AVISO_CSV_PRE_2010}`,
+      `2009-12-31,BBAS3,10,25,baixa,${AVISO_CSV_PRE_2010}`,
     )
   })
 
@@ -67,7 +67,7 @@ describe('transacoesParaCsv', () => {
       [],
     )
     const csv = transacoesParaCsv([ajustada])
-    expect(linhas(csv)[1]).toBe('2010-01-01,BBAS3,ACAO,10,25,alta,')
+    expect(linhas(csv)[1]).toBe('2010-01-01,BBAS3,10,25,alta,')
   })
 
   it('escapa vírgulas e aspas dentro dos campos', () => {
