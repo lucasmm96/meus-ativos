@@ -10,7 +10,7 @@ interface ChartCardProps {
 export function ChartCard({ title, children, className = '' }: ChartCardProps) {
   return (
     <Card className={className}>
-      <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-text-secondary mb-4">
+      <h3 className="font-sans text-sm font-semibold uppercase tracking-widest text-text-secondary mb-4">
         {title}
       </h3>
       {children}

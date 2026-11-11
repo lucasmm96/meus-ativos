@@ -327,7 +327,7 @@ export function Transactions() {
           </Link>
           <div>
             <p className="font-body text-xs text-text-secondary uppercase tracking-widest">meus ativos</p>
-            <h1 className="font-display font-semibold text-text-primary text-lg leading-tight">Transações</h1>
+            <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">Transações</h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -391,7 +391,7 @@ export function Transactions() {
                 <div className="w-7 h-7 rounded-lg bg-yield/20 flex items-center justify-center">
                   <span className="material-symbols-outlined text-yield text-[18px]">upload_file</span>
                 </div>
-                <span className="font-display font-semibold text-text-primary">Importar Transações</span>
+                <span className="font-sans font-semibold text-text-primary">Importar Transações</span>
               </div>
               <button
                 onClick={toggleImport}
@@ -598,7 +598,7 @@ export function Transactions() {
               <div className="w-7 h-7 rounded-lg bg-equity/20 flex items-center justify-center">
                 <span className="material-symbols-outlined text-equity text-[18px]">{editingId ? 'edit' : 'add_circle'}</span>
               </div>
-              <span className="font-display font-semibold text-text-primary">{editingId ? 'Editar Transação' : 'Nova Compra'}</span>
+              <span className="font-sans font-semibold text-text-primary">{editingId ? 'Editar Transação' : 'Nova Compra'}</span>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -779,7 +779,7 @@ export function Transactions() {
             {filtered.length === 0 && (
               <Card className="flex flex-col items-center justify-center py-10 text-center gap-3">
                 <span className="material-symbols-outlined text-text-tertiary text-[32px]">folder_off</span>
-                <p className="font-display font-semibold text-text-primary">Nenhuma ordem encontrada</p>
+                <p className="font-sans font-semibold text-text-primary">Nenhuma ordem encontrada</p>
                 <p className="font-body text-sm text-text-secondary max-w-xs">Não há lançamentos para os filtros selecionados.</p>
               </Card>
             )}

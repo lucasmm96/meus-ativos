@@ -194,7 +194,7 @@ export function AtivosExplorer() {
           <p className="font-body text-xs text-text-secondary uppercase tracking-widest">
             meus ativos
           </p>
-          <h1 className="font-display font-semibold text-text-primary text-lg leading-tight">
+          <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">
             Ativos
           </h1>
         </div>

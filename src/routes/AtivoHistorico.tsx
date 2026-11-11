@@ -243,7 +243,7 @@ export function AtivoHistorico() {
           <p className="font-body text-xs text-text-secondary uppercase tracking-widest">
             meus ativos
           </p>
-          <h1 className="font-display font-semibold text-text-primary text-lg leading-tight">
+          <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">
             {titulo}
           </h1>
         </div>
@@ -263,7 +263,7 @@ export function AtivoHistorico() {
                   <p className="font-body text-xs text-text-secondary uppercase tracking-widest">
                     Histórico ajustado
                   </p>
-                  <h2 className="font-display text-xl font-semibold text-text-primary">
+                  <h2 className="font-sans text-xl font-semibold text-text-primary">
                     {titulo}
                   </h2>
                   <p className="font-body text-xs text-text-tertiary">
@@ -307,7 +307,7 @@ export function AtivoHistorico() {
 
             <Card>
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-text-secondary">
+                <h3 className="font-sans text-sm font-semibold uppercase tracking-widest text-text-secondary">
                   Preço ajustado
                 </h3>
                 <div className="flex gap-1.5">
@@ -494,7 +494,7 @@ export function AtivoHistorico() {
             </div>
 
             <Card>
-              <h3 className="font-display text-sm font-semibold uppercase tracking-widest text-text-secondary mb-3">
+              <h3 className="font-sans text-sm font-semibold uppercase tracking-widest text-text-secondary mb-3">
                 Retorno por período
               </h3>
               <div className="grid grid-cols-5 gap-2">

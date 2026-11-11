@@ -50,7 +50,7 @@ export function Perfil() {
         <Link to="/" className="flex items-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
           <span className="material-symbols-outlined text-[20px]">arrow_back</span>
         </Link>
-        <h1 className="font-display font-semibold text-text-primary text-lg">Perfil</h1>
+        <h1 className="font-sans font-semibold text-text-primary text-lg">Perfil</h1>
       </header>
 
       <main className="max-w-md mx-auto px-4 py-6 space-y-6">
