@@ -32,11 +32,13 @@ function timestampDeIso(iso: string): number {
 function formatarEixoX(timestamp: number, dias: number): string {
   const data = new Date(timestamp)
   if (Number.isNaN(data.getTime())) return String(timestamp)
-  if (dias <= 400) {
-    return data.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-    })
+  if (dias <= 180) {
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  }
+  if (dias <= 730) {
+    const mes = data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+    const ano = String(data.getFullYear()).slice(2)
+    return `${mes}/${ano}`
   }
   return String(data.getFullYear())
 }
@@ -103,25 +105,19 @@ export function EvolutionLine({ data }: Props) {
           margin={mostrarCorte2010 ? { top: 24, right: 8, bottom: 0, left: 0 } : undefined}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#2d2d2d" />
-          {mostrarCorte2010 ? (
-            <XAxis
-              dataKey="timestamp"
-              type="number"
-              scale="time"
-              domain={['dataMin', 'dataMax']}
-              tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }}
-              minTickGap={48}
-              tickFormatter={(valor: number) => formatarEixoX(valor, diasSerie)}
-            />
-          ) : (
-            <XAxis dataKey="date" tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} />
-          )}
+          <XAxis
+            dataKey="timestamp"
+            type="number"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }}
+            minTickGap={100}
+            tickFormatter={(valor: number) => formatarEixoX(valor, diasSerie)}
+          />
           <YAxis tick={{ fill: '#a0a0a0', fontSize: 11, fontFamily: '"JetBrains Mono", monospace' }} tickFormatter={(v: number) => `R$${(v/1000).toFixed(0)}k`} />
           <Tooltip
             formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            labelFormatter={(label) =>
-              mostrarCorte2010 ? formatarTimestamp(Number(label)) : String(label)
-            }
+            labelFormatter={(label) => formatarTimestamp(Number(label))}
           />
           {temPre2010 && (
             <Line
