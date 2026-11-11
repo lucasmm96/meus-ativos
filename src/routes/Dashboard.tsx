@@ -26,6 +26,7 @@ export function Dashboard() {
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
   const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
   const [temPre2010, setTemPre2010] = useState(false)
+  const [dataAtualizacao, setDataAtualizacao] = useState('')
   const [loadingMain, setLoadingMain] = useState(true)
   const [loadingEvolution, setLoadingEvolution] = useState(true)
   const [error, setError] = useState('')
@@ -76,15 +77,17 @@ export function Dashboard() {
 
         // Fase 2a: preços atuais + eventos → rápido (~11 linhas) → mostra cards/gráficos
         const [ativosResumo, eventos] = await Promise.all([
-          neonFetch<{ ticker: string; preco_atual: string }[]>(
-            `/ativos_resumo?ticker=in.(${tickers.join(',')})&select=ticker,preco_atual`,
+          neonFetch<{ ticker: string; preco_atual: string; data_ultima: string }[]>(
+            `/ativos_resumo?ticker=in.(${tickers.join(',')})&select=ticker,preco_atual,data_ultima`,
             user!.jwt,
           ),
           neonFetch<EventoAjuste[]>(urlEventos, user!.jwt),
         ])
         const cotacoesMap = Object.fromEntries(ativosResumo.map(a => [a.ticker, a.preco_atual]))
+        const dataMax = ativosResumo.reduce((max, a) => (a.data_ultima > max ? a.data_ultima : max), '')
         const fatores = fatoresPorTransacao(txs, eventos)
         setTemPre2010(txs.some(t => t.data < '2010-01-01'))
+        setDataAtualizacao(dataMax)
         setResultados(calcularCarteira(txs, cotacoesMap, fatores))
         setLoadingMain(false)
 
@@ -129,7 +132,7 @@ export function Dashboard() {
 
         {!loadingMain && !error && (
           <>
-            <SummaryCards resultados={resultados} temPre2010={temPre2010} />
+            <SummaryCards resultados={resultados} temPre2010={temPre2010} dataAtualizacao={dataAtualizacao} />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <AllocationPie resultados={resultados} mode="valor" />

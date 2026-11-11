@@ -7,6 +7,7 @@ import Decimal from 'decimal.js'
 interface Props {
   resultados: ResultadoAtivo[]
   temPre2010?: boolean
+  dataAtualizacao?: string
 }
 
 function fmt(val: string) {
@@ -55,7 +56,7 @@ function PillVariacao({ pnl, investido }: PillVariacaoProps) {
       <span
         role="button"
         tabIndex={0}
-        className={`px-2 py-0.5 rounded-full ${colorClass} font-body text-[10px] font-semibold whitespace-nowrap cursor-default select-none`}
+        className={`px-2 py-0.5 rounded-full leading-none ${colorClass} font-body text-[10px] font-semibold whitespace-nowrap cursor-default select-none`}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
         onClick={(e) => { e.stopPropagation(); setAberto(v => !v) }}
@@ -72,7 +73,7 @@ function PillVariacao({ pnl, investido }: PillVariacaoProps) {
   )
 }
 
-export function SummaryCards({ resultados, temPre2010 = false }: Props) {
+export function SummaryCards({ resultados, temPre2010 = false, dataAtualizacao }: Props) {
   const acoes = resultados.filter(r => r.tipo === 'ACAO')
   const fiis = resultados.filter(r => r.tipo === 'FII')
 
@@ -88,7 +89,12 @@ export function SummaryCards({ resultados, temPre2010 = false }: Props) {
   const investidoFiis = fiis.reduce((s, r) => s.plus(r.valorInvestido), new Decimal(0))
   const investidoTotal = investidoAcoes.plus(investidoFiis)
 
+  const dataFmt = dataAtualizacao
+    ? new Date(`${dataAtualizacao}T00:00:00`).toLocaleDateString('pt-BR')
+    : null
+
   return (
+    <div className="space-y-1.5">
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card>
         <div className="flex items-center gap-2 mb-1">
@@ -118,6 +124,12 @@ export function SummaryCards({ resultados, temPre2010 = false }: Props) {
           </p>
         )}
       </Card>
+    </div>
+    {dataFmt && (
+      <p className="text-[10px] font-body text-text-secondary/40 text-right">
+        Cotações de {dataFmt}
+      </p>
+    )}
     </div>
   )
 }
