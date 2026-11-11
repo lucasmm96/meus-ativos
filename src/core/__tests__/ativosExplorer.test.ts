@@ -1,10 +1,12 @@
 import {
   filtrarAtivos,
+  filtrarPorEscopo,
   formatarMoeda,
   formatarRetorno,
   normalizarBusca,
   ordenarAtivos,
   posicaoFaixa52s,
+  tickersDaCarteira,
   type AtivoResumo,
 } from '../ativosExplorer'
 
@@ -131,6 +133,41 @@ describe('formatarRetorno', () => {
   it('retorna travessão para nulo ou inválido', () => {
     expect(formatarRetorno(null)).toBe('—')
     expect(formatarRetorno('abc')).toBe('—')
+  })
+})
+
+describe('tickersDaCarteira', () => {
+  it('soma as quantidades e mantém apenas saldo positivo', () => {
+    const tickers = tickersDaCarteira([
+      { ativoTicker: 'ITUB4', quantidade: 10 },
+      { ativoTicker: 'ITUB4', quantidade: -4 },
+      { ativoTicker: 'PETR4', quantidade: 3 },
+      { ativoTicker: 'VALE3', quantidade: 5 },
+      { ativoTicker: 'VALE3', quantidade: -5 },
+      { ativoTicker: 'BBAS3', quantidade: -2 },
+    ])
+    expect([...tickers].sort()).toEqual(['ITUB4', 'PETR4'])
+  })
+
+  it('agrupa tickers fracionários no ticker de cotação', () => {
+    const tickers = tickersDaCarteira(
+      [
+        { ativoTicker: 'ITUB4F', quantidade: 2 },
+        { ativoTicker: 'ITUB4', quantidade: 1 },
+      ],
+      { ITUB4F: 'ITUB4' },
+    )
+    expect([...tickers]).toEqual(['ITUB4'])
+  })
+})
+
+describe('filtrarPorEscopo', () => {
+  it('mostra só a carteira ou todos os ativos', () => {
+    const carteira = new Set(['ITUB4', 'MXRF11'])
+    expect(
+      filtrarPorEscopo(ativos, carteira, 'CARTEIRA').map((a) => a.ticker),
+    ).toEqual(['ITUB4', 'MXRF11'])
+    expect(filtrarPorEscopo(ativos, carteira, 'TODOS')).toHaveLength(3)
   })
 })
 

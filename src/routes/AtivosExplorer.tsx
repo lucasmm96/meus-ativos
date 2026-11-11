@@ -2,18 +2,23 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
-import { Card, Input } from '../components'
+import { Button, Card, Input } from '../components'
 import {
+  FILTROS_ESCOPO,
   FILTROS_TIPO,
   ORDENS_ATIVOS,
   filtrarAtivos,
+  filtrarPorEscopo,
   formatarMoeda,
   formatarRetorno,
   ordenarAtivos,
   posicaoFaixa52s,
+  tickersDaCarteira,
   type AtivoResumo,
+  type FiltroEscopo,
   type FiltroTipo,
   type OrdemAtivos,
+  type TransacaoCarteira,
 } from '../core/ativosExplorer'
 
 const CAMPOS_RESUMO =
@@ -111,8 +116,12 @@ function LinhaAtivo({ ativo }: { ativo: AtivoResumo }) {
 export function AtivosExplorer() {
   const { user } = useAuth()
   const [ativos, setAtivos] = useState<AtivoResumo[]>([])
+  const [tickersCarteira, setTickersCarteira] = useState<Set<string>>(
+    new Set(),
+  )
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<FiltroTipo>('TODOS')
+  const [escopo, setEscopo] = useState<FiltroEscopo>('CARTEIRA')
   const [ordem, setOrdem] = useState<OrdemAtivos>('nome')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -123,11 +132,30 @@ export function AtivosExplorer() {
 
     async function load() {
       try {
-        const data = await neonFetch<AtivoResumo[]>(
-          `/ativos_resumo?select=${CAMPOS_RESUMO}`,
-          user!.jwt,
+        const [data, transacoes, mapaAtivos] = await Promise.all([
+          neonFetch<AtivoResumo[]>(
+            `/ativos_resumo?select=${CAMPOS_RESUMO}`,
+            user!.jwt,
+          ),
+          neonFetch<TransacaoCarteira[]>(
+            `/transacoes?userId=eq.${user!.id}&select=ativoTicker,quantidade`,
+            user!.jwt,
+          ),
+          neonFetch<Array<{ ticker: string; tickerCotacao: string }>>(
+            '/ativos?select=ticker,tickerCotacao',
+            user!.jwt,
+          ),
+        ])
+        if (cancelado) return
+        setAtivos(data)
+        setTickersCarteira(
+          tickersDaCarteira(
+            transacoes,
+            Object.fromEntries(
+              mapaAtivos.map((ativo) => [ativo.ticker, ativo.tickerCotacao]),
+            ),
+          ),
         )
-        if (!cancelado) setAtivos(data)
       } catch (e) {
         if (!cancelado) setError(String(e))
       } finally {
@@ -141,9 +169,13 @@ export function AtivosExplorer() {
     }
   }, [user])
 
+  const base = useMemo(
+    () => filtrarPorEscopo(ativos, tickersCarteira, escopo),
+    [ativos, tickersCarteira, escopo],
+  )
   const visiveis = useMemo(
-    () => ordenarAtivos(filtrarAtivos(ativos, busca, filtro), ordem),
-    [ativos, busca, filtro, ordem],
+    () => ordenarAtivos(filtrarAtivos(base, busca, filtro), ordem),
+    [base, busca, filtro, ordem],
   )
 
   return (
@@ -178,6 +210,29 @@ export function AtivosExplorer() {
             value={busca}
             onChange={(evento) => setBusca(evento.target.value)}
           />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-body text-[10px] uppercase tracking-widest text-text-tertiary">
+              Mostrar
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {FILTROS_ESCOPO.map((opcao) => (
+                <button
+                  key={opcao.valor}
+                  type="button"
+                  aria-pressed={escopo === opcao.valor}
+                  onClick={() => setEscopo(opcao.valor)}
+                  className={`px-3 py-1 rounded-full font-body text-xs font-medium transition-colors ${
+                    escopo === opcao.valor
+                      ? 'bg-equity text-bg-base'
+                      : 'bg-surface-elevated text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  {opcao.rotulo}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-1.5">
@@ -223,7 +278,8 @@ export function AtivosExplorer() {
           </div>
 
           <p className="font-body text-xs text-text-tertiary">
-            {visiveis.length} de {ativos.length} ativos
+            {visiveis.length} de {base.length}{' '}
+            {escopo === 'CARTEIRA' ? 'ativos na sua carteira' : 'ativos'}
           </p>
         </Card>
 
@@ -241,11 +297,24 @@ export function AtivosExplorer() {
             ))}
             {visiveis.length === 0 && (
               <Card>
-                <p className="font-body text-sm text-text-secondary text-center py-6">
-                  {ativos.length === 0
-                    ? 'Nenhum ativo disponível no banco.'
-                    : 'Nenhum ativo encontrado para os filtros atuais.'}
-                </p>
+                <div className="text-center py-6 space-y-3">
+                  <p className="font-body text-sm text-text-secondary">
+                    {ativos.length === 0
+                      ? 'Nenhum ativo disponível no banco.'
+                      : escopo === 'CARTEIRA' && base.length === 0
+                        ? 'Você ainda não possui ativos na carteira.'
+                        : 'Nenhum ativo encontrado para os filtros atuais.'}
+                  </p>
+                  {ativos.length > 0 && escopo === 'CARTEIRA' && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => setEscopo('TODOS')}
+                    >
+                      Ver todos os ativos
+                    </Button>
+                  )}
+                </div>
               </Card>
             )}
           </div>
