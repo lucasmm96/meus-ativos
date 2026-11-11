@@ -1,4 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from 'react'
+import Decimal from 'decimal.js'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch, neonMutate } from '../lib/neon'
@@ -9,6 +15,12 @@ import {
   type EventoAjuste,
 } from '../core/ajustarTransacoes'
 import { baixarCsvTransacoes } from '../core/exportCsv'
+import {
+  baixarModeloImportacaoCsv,
+  importarCsv,
+  LINHA_EXEMPLO_IMPORTACAO,
+  type ResultadoImportacao,
+} from '../core/importCsv'
 import { Button, Card } from '../components'
 
 interface Ativo {
@@ -19,6 +31,28 @@ interface Ativo {
 }
 
 type FilterType = 'all' | 'ACAO' | 'FII' | 'archived'
+
+interface PreviewImportacao extends ResultadoImportacao {
+  nomeArquivo: string
+}
+
+function lerArquivoTexto(arquivo: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const leitor = new FileReader()
+    leitor.onload = () => resolve(String(leitor.result ?? ''))
+    leitor.onerror = () =>
+      reject(leitor.error ?? new Error('Falha ao ler o arquivo.'))
+    leitor.readAsText(arquivo, 'utf-8')
+  })
+}
+
+function formatarValorImportado(valor: string): string {
+  const decimal = new Decimal(valor)
+  const casas = Math.min(Math.max(decimal.decimalPlaces(), 2), 6)
+  const [inteiro, fracao] = decimal.toFixed(casas).split('.')
+  const inteiroFormatado = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `${inteiroFormatado},${fracao}`
+}
 
 export function Transactions() {
   const { user } = useAuth()
@@ -42,6 +76,13 @@ export function Transactions() {
   const [formError, setFormError] = useState('')
   const [formAjustadaManualmente, setFormAjustadaManualmente] = useState(false)
   const [formPre2010Ciente, setFormPre2010Ciente] = useState(false)
+
+  // Import CSV state
+  const [showImport, setShowImport] = useState(false)
+  const [previewImport, setPreviewImport] = useState<PreviewImportacao | null>(null)
+  const [importFileError, setImportFileError] = useState('')
+  const [importando, setImportando] = useState(false)
+  const [importSucesso, setImportSucesso] = useState('')
 
   async function fetchData() {
     if (!user) return
@@ -188,6 +229,80 @@ export function Transactions() {
     baixarCsvTransacoes(ajustarTransacoes(transacoes, eventos))
   }
 
+  function toggleImport() {
+    setShowImport((valor) => !valor)
+    setImportFileError('')
+  }
+
+  async function handleImportFile(evento: ChangeEvent<HTMLInputElement>) {
+    const arquivo = evento.target.files?.[0]
+    if (!arquivo) return
+    setImportFileError('')
+    setImportSucesso('')
+    try {
+      const texto = await lerArquivoTexto(arquivo)
+      setPreviewImport({
+        ...importarCsv(texto, ativos, transacoes),
+        nomeArquivo: arquivo.name,
+      })
+    } catch (erro) {
+      setPreviewImport(null)
+      setImportFileError(String(erro))
+    } finally {
+      evento.target.value = ''
+    }
+  }
+
+  async function handleImportar() {
+    if (
+      !user ||
+      !previewImport ||
+      previewImport.erros.length > 0 ||
+      previewImport.linhas.length === 0
+    ) {
+      return
+    }
+
+    setImportando(true)
+    setImportFileError('')
+    try {
+      const linhas = previewImport.linhas
+      await neonMutate(
+        '/transacoes',
+        user.jwt,
+        linhas.map((linha) => ({
+          userId: user.id,
+          ativoTicker: linha.ativoTicker,
+          data: linha.data,
+          valorUnitario: linha.valorUnitario,
+          quantidade: linha.quantidade,
+          ajustadaManualmente: false,
+        })),
+      )
+      setShowImport(false)
+      setPreviewImport(null)
+      setImportSucesso(
+        `${linhas.length} ${
+          linhas.length === 1
+            ? 'transação importada'
+            : 'transações importadas'
+        }.`,
+      )
+      await fetchData()
+    } catch (erro) {
+      setImportFileError(String(erro))
+    } finally {
+      setImportando(false)
+    }
+  }
+
+  const importTemErros = (previewImport?.erros.length ?? 0) > 0
+  const podeImportar =
+    !!previewImport &&
+    !importTemErros &&
+    previewImport.linhas.length > 0 &&
+    !importando
+
   const FILTER_CHIPS: { label: string; value: FilterType }[] = [
     { label: 'Todos', value: 'all' },
     { label: 'Ações', value: 'ACAO' },
@@ -220,6 +335,17 @@ export function Transactions() {
             Exportar CSV
           </Button>
           <Button
+            variant="secondary"
+            className="h-9 px-3 text-xs flex items-center gap-1"
+            onClick={toggleImport}
+            title="Importar transações via CSV"
+            aria-label="Importar transações via CSV"
+            aria-expanded={showImport}
+          >
+            <span className="material-symbols-outlined text-[16px]">upload</span>
+            <span className="hidden sm:inline">Importar CSV</span>
+          </Button>
+          <Button
             variant="primary"
             className="h-9 px-3 text-xs flex items-center gap-1"
             onClick={openNewForm}
@@ -233,6 +359,230 @@ export function Transactions() {
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {loading && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
+
+        {importSucesso && (
+          <div
+            role="status"
+            className="rounded-xl border border-equity/40 bg-equity/10 px-4 py-3 flex items-center justify-between gap-3"
+          >
+            <p className="font-body text-sm text-equity">{importSucesso}</p>
+            <button
+              onClick={() => setImportSucesso('')}
+              className="text-equity hover:opacity-70 transition-opacity"
+              aria-label="Fechar aviso de importação"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        )}
+
+        {/* Import CSV panel */}
+        {showImport && (
+          <Card className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-yield/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-yield text-[18px]">upload_file</span>
+                </div>
+                <span className="font-display font-semibold text-text-primary">Importar Transações</span>
+              </div>
+              <button
+                onClick={toggleImport}
+                className="text-text-secondary hover:text-text-primary transition-colors"
+                aria-label="Fechar importação"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="font-body text-sm text-text-secondary">
+                Use o arquivo modelo com separador <code>;</code>, datas{' '}
+                <code>AAAA-MM-DD</code> e vírgula decimal. Exemplo de linha:
+              </p>
+              <code className="block overflow-x-auto rounded-lg border border-border-subtle bg-bg-base px-3 py-2 font-mono text-xs text-text-primary">
+                {LINHA_EXEMPLO_IMPORTACAO}
+              </code>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-9 px-3 text-xs flex items-center gap-1"
+                  onClick={baixarModeloImportacaoCsv}
+                >
+                  <span className="material-symbols-outlined text-[16px]">download</span>
+                  Baixar modelo CSV
+                </Button>
+                <label className="h-9 px-3 rounded-xl border border-border-subtle bg-transparent text-text-primary font-body font-semibold text-xs tracking-wide flex items-center gap-1 cursor-pointer hover:bg-surface-elevated transition-colors">
+                  <span className="material-symbols-outlined text-[16px]">attach_file</span>
+                  Selecionar arquivo
+                  <input
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={handleImportFile}
+                    disabled={loading}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {importFileError && (
+              <p className="text-alert font-body text-xs">{importFileError}</p>
+            )}
+
+            {previewImport && (
+              <div className="flex flex-col gap-3 rounded-xl border border-border-subtle bg-bg-base p-3">
+                <p className="font-body text-xs text-text-secondary">
+                  <span className="text-text-primary font-semibold">
+                    {previewImport.nomeArquivo}
+                  </span>
+                  {' — '}
+                  {previewImport.linhas.length}{' '}
+                  {previewImport.linhas.length === 1
+                    ? 'transação válida'
+                    : 'transações válidas'}
+                  {previewImport.duplicadas.length > 0 &&
+                    `, ${previewImport.duplicadas.length} ${
+                      previewImport.duplicadas.length === 1
+                        ? 'duplicata ignorada'
+                        : 'duplicatas ignoradas'
+                    }`}
+                  {previewImport.erros.length > 0 &&
+                    `, ${previewImport.erros.length} ${
+                      previewImport.erros.length === 1
+                        ? 'erro encontrado'
+                        : 'erros encontrados'
+                    }`}
+                  .
+                </p>
+
+                {importTemErros && (
+                  <div className="rounded-lg border border-alert/40 bg-alert/10 px-3 py-2">
+                    <p className="font-body text-xs font-semibold text-alert">
+                      Corrija os erros e selecione o arquivo novamente. Nenhuma
+                      transação será importada.
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {previewImport.erros.slice(0, 20).map((erro, indice) => (
+                        <li
+                          key={`${erro.linha}-${indice}`}
+                          className="font-body text-xs text-alert"
+                        >
+                          Linha {erro.linha}: {erro.mensagem}
+                        </li>
+                      ))}
+                    </ul>
+                    {previewImport.erros.length > 20 && (
+                      <p className="mt-2 font-body text-xs text-alert">
+                        Mais {previewImport.erros.length - 20} erros não
+                        exibidos.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {previewImport.duplicadas.length > 0 && (
+                  <div className="rounded-lg border border-yield/40 bg-yield/10 px-3 py-2">
+                    <p className="font-body text-xs text-yield">
+                      Duplicatas não serão importadas:
+                    </p>
+                    <ul className="mt-1 space-y-0.5">
+                      {previewImport.duplicadas.slice(0, 10).map((duplicada) => (
+                        <li
+                          key={duplicada.linha}
+                          className="font-body text-xs text-yield"
+                        >
+                          Linha {duplicada.linha}:{' '}
+                          {duplicada.motivo === 'existente'
+                            ? 'já cadastrada'
+                            : 'repetida no arquivo'}
+                          .
+                        </li>
+                      ))}
+                    </ul>
+                    {previewImport.duplicadas.length > 10 && (
+                      <p className="mt-1 font-body text-xs text-yield">
+                        Mais {previewImport.duplicadas.length - 10} duplicatas
+                        não exibidas.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {!importTemErros && previewImport.linhas.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-body text-xs">
+                      <thead>
+                        <tr className="text-text-tertiary uppercase tracking-widest">
+                          <th className="py-1 pr-2 font-medium">Linha</th>
+                          <th className="py-1 pr-2 font-medium">Ticker</th>
+                          <th className="py-1 pr-2 font-medium">Data</th>
+                          <th className="py-1 pr-2 font-medium">Tipo</th>
+                          <th className="py-1 pr-2 font-medium">Valor</th>
+                          <th className="py-1 font-medium">Qtd.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewImport.linhas.slice(0, 10).map((linha) => (
+                          <tr
+                            key={linha.linha}
+                            className="border-t border-border-subtle text-text-primary"
+                          >
+                            <td className="py-1 pr-2 tabular-nums">{linha.linha}</td>
+                            <td className="py-1 pr-2">{linha.ativoTicker}</td>
+                            <td className="py-1 pr-2 tabular-nums">{linha.data}</td>
+                            <td className="py-1 pr-2">
+                              {linha.tipo === 'ACAO' ? 'Ação' : 'FII'}
+                            </td>
+                            <td className="py-1 pr-2 tabular-nums">
+                              R$ {formatarValorImportado(linha.valorUnitario)}
+                            </td>
+                            <td className="py-1 tabular-nums">{linha.quantidade}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {previewImport.linhas.length > 10 && (
+                      <p className="mt-2 font-body text-xs text-text-secondary">
+                        Mais {previewImport.linhas.length - 10} linhas não
+                        exibidas.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {!importTemErros && previewImport.linhas.length === 0 && (
+                  <p className="font-body text-xs text-text-secondary">
+                    Nenhuma transação nova para importar.
+                  </p>
+                )}
+
+                {previewImport.erros.length === 0 &&
+                  previewImport.linhas.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      className="w-full flex items-center justify-center gap-2"
+                      disabled={!podeImportar}
+                      onClick={handleImportar}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">
+                        {importando ? 'hourglass_top' : 'upload'}
+                      </span>
+                      {importando
+                        ? 'Importando...'
+                        : `Importar ${previewImport.linhas.length} ${
+                            previewImport.linhas.length === 1
+                              ? 'transação'
+                              : 'transações'
+                          }`}
+                    </Button>
+                  )}
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* New transaction form */}
         {showForm && (
