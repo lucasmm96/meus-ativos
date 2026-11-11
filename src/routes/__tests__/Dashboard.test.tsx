@@ -80,8 +80,21 @@ function mockApi(
   cotacoes: CotacaoAjustada[],
   eventos: EventoAjuste[] = [],
 ) {
+  // Deriva ativos_resumo das cotações: preco_ajustado mais recente por ticker
+  const precosPorTicker: Record<string, { data: string; preco_atual: string }> = {}
+  for (const c of cotacoes) {
+    const atual = precosPorTicker[c.ativoTicker]
+    if (!atual || c.data > atual.data) {
+      precosPorTicker[c.ativoTicker] = { data: c.data, preco_atual: c.preco_ajustado }
+    }
+  }
+  const ativosResumo = Object.entries(precosPorTicker).map(
+    ([ticker, { preco_atual }]) => ({ ticker, preco_atual }),
+  )
+
   mockNeonFetch.mockImplementation((async (path: string) => {
     if (path.startsWith('/transacoes')) return transacoes
+    if (path.startsWith('/ativos_resumo')) return ativosResumo  // antes de /ativos
     if (path.startsWith('/ativos')) return ativos
     if (path.startsWith('/cotacoes_ajustadas')) return cotacoes
     if (path.startsWith('/eventos_corporativos')) return eventos
@@ -160,7 +173,7 @@ describe('Dashboard — cotações ajustadas', () => {
     expect(
       caminhosChamados().some((path) => path.startsWith('/cotacoes?')),
     ).toBe(false)
-    expect(mockNeonFetch).toHaveBeenCalledTimes(4)
+    expect(mockNeonFetch).toHaveBeenCalledTimes(5)
 
     // VALE3: 2 ações × 50 (ajustado mais recente) + PETR4: 1 × 30 = 130.
     expect(textoNormalizado(container)).toContain('R$ 130,00')

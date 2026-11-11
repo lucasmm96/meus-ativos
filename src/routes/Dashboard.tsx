@@ -10,7 +10,6 @@ import {
 } from '../core/ajustarTransacoes'
 import {
   extrairTickersUnicos,
-  mapearPrecoAjustadoMaisRecente,
   montarEvolucaoPatrimonial,
   montarUrlCotacoesAjustadas,
   type PontoEvolucao,
@@ -28,13 +27,15 @@ export function Dashboard() {
   const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
   const [temAjuste, setTemAjuste] = useState(false)
   const [temPre2010, setTemPre2010] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loadingMain, setLoadingMain] = useState(true)
+  const [loadingEvolution, setLoadingEvolution] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     if (!user) return
     async function load() {
       try {
+        // Fase 1: transações + mapa de ativos (paralelo)
         const [rows, ativos] = await Promise.all([
           neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user!.id}&select=*`, user!.jwt),
           neonFetch<{ ticker: string; tickerCotacao: string; tipo: 'ACAO' | 'FII' }[]>('/ativos?select=ticker,tickerCotacao,tipo', user!.jwt),
@@ -53,6 +54,8 @@ export function Dashboard() {
           setEvolutionData([])
           setTemAjuste(false)
           setTemPre2010(false)
+          setLoadingMain(false)
+          setLoadingEvolution(false)
           return
         }
 
@@ -65,21 +68,33 @@ export function Dashboard() {
         ]
         const urlEventos = `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`
 
-        const [cotacoes, eventos] = await Promise.all([
-          neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt),
+        // Fase 2: inicia as 3 fetches em paralelo.
+        // cotacoes_ajustadas retorna ~20k linhas — não bloqueia a UI principal.
+        const cotacoesP = neonFetch<CotacaoAjustada[]>(urlCotacoes, user!.jwt)
+
+        // Fase 2a: preços atuais + eventos → rápido (~11 linhas) → mostra cards/gráficos
+        const [ativosResumo, eventos] = await Promise.all([
+          neonFetch<{ ticker: string; preco_atual: string }[]>(
+            `/ativos_resumo?ticker=in.(${tickers.join(',')})&select=ticker,preco_atual`,
+            user!.jwt,
+          ),
           neonFetch<EventoAjuste[]>(urlEventos, user!.jwt),
         ])
-        const cotacoesMap = mapearPrecoAjustadoMaisRecente(cotacoes)
+        const cotacoesMap = Object.fromEntries(ativosResumo.map(a => [a.ticker, a.preco_atual]))
         const fatores = fatoresPorTransacao(txs, eventos)
-
         setTemAjuste(txs.some(t => (fatores.get(t.id) ?? 1) !== 1))
         setTemPre2010(txs.some(t => t.data < '2010-01-01'))
         setResultados(calcularCarteira(txs, cotacoesMap, fatores))
+        setLoadingMain(false)
+
+        // Fase 2b: série histórica completa → só para o gráfico de evolução
+        const cotacoes = await cotacoesP
         setEvolutionData(montarEvolucaoPatrimonial(txs, cotacoes, fatores))
       } catch (e) {
         setError(String(e))
+        setLoadingMain(false)
       } finally {
-        setLoading(false)
+        setLoadingEvolution(false)
       }
     }
     load()
@@ -108,10 +123,10 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        {loading && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
+        {loadingMain && <p className="text-text-secondary font-body text-sm">Carregando...</p>}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 
-        {!loading && !error && (
+        {!loadingMain && !error && (
           <>
             <SummaryCards resultados={resultados} temAjuste={temAjuste} temPre2010={temPre2010} />
 
@@ -122,7 +137,10 @@ export function Dashboard() {
               <AllocationBar resultados={resultados} mode="cotas" />
             </div>
 
-            <EvolutionLine data={evolutionData} />
+            {loadingEvolution
+              ? <p className="text-text-secondary font-body text-sm">Carregando evolução...</p>
+              : <EvolutionLine data={evolutionData} />
+            }
           </>
         )}
       </main>

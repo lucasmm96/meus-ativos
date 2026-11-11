@@ -93,16 +93,19 @@ export function montarEvolucaoPatrimonial(
   )
   const evolucao: PontoEvolucao[] = []
 
-  for (const data of datasOrdenadas) {
-    const transacoesAntes = transacoesOrdenadas.filter((tx) => tx.data <= data)
-    if (transacoesAntes.length === 0) continue
+  // Dois ponteiros: cada transação é processada uma vez (O(N+M) vs O(N×M))
+  const posicoes: Record<string, number> = {}
+  let txIdx = 0
 
-    const posicoes: Record<string, number> = {}
-    for (const tx of transacoesAntes) {
+  for (const data of datasOrdenadas) {
+    while (txIdx < transacoesOrdenadas.length && transacoesOrdenadas[txIdx].data <= data) {
+      const tx = transacoesOrdenadas[txIdx]
       const fator = fatores?.get(tx.id) ?? 1
       posicoes[tx.tickerCotacao] =
         (posicoes[tx.tickerCotacao] ?? 0) + Math.round(tx.quantidade * fator)
+      txIdx++
     }
+    if (txIdx === 0) continue
 
     const precos = precoPorDataTicker[data]
     let total = 0
