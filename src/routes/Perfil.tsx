@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth, updateUserName } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { Button, Card } from '../components'
@@ -45,15 +44,7 @@ export function Perfil() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
-          <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-        </Link>
-        <h1 className="font-sans font-semibold text-text-primary text-lg">Perfil</h1>
-      </header>
-
-      <main className="max-w-md mx-auto px-4 py-6 space-y-6">
+    <main className="max-w-md mx-auto px-4 py-6 space-y-6">
         {fetchLoading ? (
           <p className="text-text-secondary font-body text-sm">Carregando...</p>
         ) : (
@@ -111,6 +102,5 @@ export function Perfil() {
           </>
         )}
       </main>
-    </div>
   )
 }

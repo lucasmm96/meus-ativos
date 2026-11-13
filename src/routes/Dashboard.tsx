@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { calcularCarteira } from '../core/calculo'
@@ -15,7 +14,7 @@ import {
   type PontoEvolucao,
 } from '../core/cotacoes'
 import type { TransacaoRow, Transacao, ResultadoAtivo } from '../core/types'
-import { Button, SkeletonCard } from '../components'
+import { SkeletonCard } from '../components'
 import { cachedFetch } from '../lib/cache'
 import { SummaryCards } from '../components/charts/SummaryCards'
 import { AllocationPie } from '../components/charts/AllocationPie'
@@ -23,7 +22,7 @@ import { AllocationBar } from '../components/charts/AllocationBar'
 import { EvolutionLine } from '../components/charts/EvolutionLine'
 
 export function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const [resultados, setResultados] = useState<ResultadoAtivo[]>([])
   const [evolutionData, setEvolutionData] = useState<PontoEvolucao[]>([])
   const [temPre2010, setTemPre2010] = useState(false)
@@ -109,28 +108,7 @@ export function Dashboard() {
   }, [user])
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <img src="/favicon.svg" alt="Meus Ativos" className="w-7 h-7" />
-          <span className="font-display font-semibold text-text-primary text-lg">Meus Ativos</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link to="/ativos">
-            <Button variant="secondary" className="h-9 px-3 text-xs">Ativos</Button>
-          </Link>
-          <Link to="/transactions">
-            <Button variant="secondary" className="h-9 px-3 text-xs">Transações</Button>
-          </Link>
-          <Link to="/perfil">
-            <Button variant="secondary" className="h-9 px-3 text-xs">Perfil</Button>
-          </Link>
-          <Button variant="secondary" className="h-9 px-3 text-xs" onClick={signOut}>Sair</Button>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {loadingMain && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -162,6 +140,5 @@ export function Dashboard() {
           </>
         )}
       </main>
-    </div>
   )
 }

@@ -231,27 +231,23 @@ export function AtivoHistorico() {
   const tipoLabel = ativo?.tipo === 'FII' ? 'FII' : 'Ação'
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center gap-2">
+    <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+      <div className="flex items-center gap-3">
         <Link
-          to="/"
-          className="flex items-center text-text-secondary hover:text-text-primary transition-colors"
-          aria-label="Voltar ao dashboard"
+          to="/ativos"
+          aria-label="Voltar a Ativos"
+          className="flex items-center justify-center w-10 h-10 rounded-xl
+                     text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors shrink-0"
         >
           <span className="material-symbols-outlined text-[20px]">arrow_back</span>
         </Link>
-        <div>
-          <p className="font-body text-xs text-text-secondary uppercase tracking-widest">
-            meus ativos
-          </p>
-          <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">
-            {titulo}
-          </h1>
+        <div className="min-w-0">
+          <p className="font-body text-xs text-text-secondary uppercase tracking-widest">Ativos</p>
+          <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight truncate">{titulo}</h1>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
-        {loading && <SkeletonCard className="h-48" />}
+      {loading && <SkeletonCard className="h-48" />}
         {error && <p className="text-alert font-body text-sm">{error}</p>}
 
         {!loading && !error && (
@@ -496,7 +492,7 @@ export function AtivoHistorico() {
               <h3 className="font-sans text-sm font-semibold uppercase tracking-widest text-text-secondary mb-3">
                 Retorno por período
               </h3>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {retornosPorPeriodo.map(({ periodo, valor }) => (
                   <div key={periodo} className="text-center">
                     <p className="font-body text-xs text-text-secondary">
@@ -571,6 +567,5 @@ export function AtivoHistorico() {
           </p>
         </footer>
       </main>
-    </div>
   )
 }

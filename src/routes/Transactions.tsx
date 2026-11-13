@@ -322,18 +322,10 @@ export function Transactions() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-1 text-text-secondary hover:text-text-primary transition-colors">
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          </Link>
-          <div>
-            <p className="font-body text-xs text-text-secondary uppercase tracking-widest">meus ativos</p>
-            <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">Transações</h1>
-          </div>
-        </div>
+    <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      {/* Page actions toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-sans font-semibold text-text-primary text-xl">Movimentações</h1>
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
@@ -343,7 +335,7 @@ export function Transactions() {
             title="Exportar todas as transações em CSV"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
-            Exportar CSV
+            <span className="hidden sm:inline">Exportar CSV</span>
           </Button>
           <Button
             variant="secondary"
@@ -362,12 +354,11 @@ export function Transactions() {
             onClick={openNewForm}
           >
             <span className="material-symbols-outlined text-[16px]">{showForm ? 'close' : 'add'}</span>
-            Nova Transação
+            <span className="hidden sm:inline">Nova Transação</span>
           </Button>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {loading && (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -891,6 +882,5 @@ export function Transactions() {
           </div>
         )}
       </main>
-    </div>
   )
 }

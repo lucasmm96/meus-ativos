@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './lib/auth'
-import { OfflineBanner } from './components'
+import { OfflineBanner, Layout } from './components'
 import { Login } from './routes/Login'
 import { Dashboard } from './routes/Dashboard'
 import { AtivosExplorer } from './routes/AtivosExplorer'
@@ -11,7 +11,7 @@ import { Perfil } from './routes/Perfil'
 function Protected({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  return user ? <>{children}</> : <Navigate to="/login" replace />
+  return user ? <Layout>{children}</Layout> : <Navigate to="/login" replace />
 }
 
 function AppRoutes() {

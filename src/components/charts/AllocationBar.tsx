@@ -64,7 +64,7 @@ export function AllocationBar({ resultados, mode }: Props) {
               dataKey="ticker"
               type="category"
               tick={<TickerTick navigate={navigate} />}
-              width={76}
+              width={60}
             />
             <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
             <Bar dataKey="value">
@@ -87,7 +87,7 @@ export function AllocationBar({ resultados, mode }: Props) {
             dataKey="ticker"
             type="category"
             tick={<TickerTick navigate={navigate} />}
-            width={76}
+            width={60}
           />
           <Tooltip formatter={(v: number) => v.toLocaleString('pt-BR')} />
           <Bar dataKey="value">

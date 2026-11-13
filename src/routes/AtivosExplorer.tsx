@@ -197,28 +197,7 @@ export function AtivosExplorer() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 bg-surface-card border-b border-border-subtle px-4 py-3 flex items-center gap-2">
-        <Link
-          to="/"
-          className="flex items-center text-text-secondary hover:text-text-primary transition-colors"
-          aria-label="Voltar ao dashboard"
-        >
-          <span className="material-symbols-outlined text-[20px]">
-            arrow_back
-          </span>
-        </Link>
-        <div>
-          <p className="font-body text-xs text-text-secondary uppercase tracking-widest">
-            meus ativos
-          </p>
-          <h1 className="font-sans font-semibold text-text-primary text-lg leading-tight">
-            Ativos
-          </h1>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+    <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
         <Card className="space-y-3">
           <Input
             id="busca-ativos"
@@ -338,6 +317,5 @@ export function AtivosExplorer() {
           </div>
         )}
       </main>
-    </div>
   )
 }
