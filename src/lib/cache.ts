@@ -5,6 +5,11 @@ interface CacheEntry<T> {
 
 const store = new Map<string, CacheEntry<unknown>>()
 
+/** Teste de unidade: esvazia o cache entre testes. */
+export function clearCache(): void {
+  store.clear()
+}
+
 export function cachedFetch<T>(
   key: string,
   fetcher: () => Promise<T>,

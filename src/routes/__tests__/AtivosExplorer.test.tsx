@@ -190,7 +190,7 @@ describe('AtivosExplorer', () => {
       'jwt',
     )
     expect(mockNeonFetch).toHaveBeenCalledWith(
-      '/ativos?select=ticker,tickerCotacao',
+      '/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel',
       'jwt',
     )
 
