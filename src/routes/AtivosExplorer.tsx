@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { Button, Card, Input, SkeletonAtivo } from '../components'
-import { cachedFetch } from '../lib/cache'
+import { useAtivos } from '../hooks/useAtivos'
 import {
   FILTROS_ESCOPO,
   FILTROS_TIPO,
@@ -116,6 +116,7 @@ function LinhaAtivo({ ativo }: { ativo: AtivoResumo }) {
 
 export function AtivosExplorer() {
   const { user } = useAuth()
+  const { ativos: catalogo, loading: catalogoLoading, error: catalogoError } = useAtivos()
   const [ativos, setAtivos] = useState<AtivoResumo[]>([])
   const [tickersCarteira, setTickersCarteira] = useState<Set<string>>(
     new Set(),
@@ -132,21 +133,25 @@ export function AtivosExplorer() {
     let cancelado = false
 
     async function load() {
+      // Aguarda o catálogo compartilhado (useAtivos) para montar o mapa de
+      // aliases antes de buscar a carteira.
+      if (catalogoLoading) return
+      if (catalogoError) {
+        setError(catalogoError)
+        setLoading(false)
+        return
+      }
       try {
-        // Fase 1: transações + mapa de aliases (rápido)
-        const [transacoes, mapaAtivos] = await Promise.all([
+        // Fase 1: transações do usuário (catálogo já veio do useAtivos)
+        const [transacoes] = await Promise.all([
           neonFetch<TransacaoCarteira[]>(
             `/transacoes?userId=eq.${user!.id}&select=ativoTicker,quantidade`,
             user!.jwt,
           ),
-          cachedFetch<Array<{ ticker: string; tickerCotacao: string }>>(
-            'ativos-catalog',
-            () => neonFetch('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user!.jwt),
-          ),
         ])
         if (cancelado) return
 
-        const aliasMap = Object.fromEntries(mapaAtivos.map((a) => [a.ticker, a.tickerCotacao]))
+        const aliasMap = Object.fromEntries(catalogo.map((a) => [a.ticker, a.tickerCotacao]))
         const tickers = tickersDaCarteira(transacoes, aliasMap)
         setTickersCarteira(tickers)
 
@@ -185,7 +190,7 @@ export function AtivosExplorer() {
     return () => {
       cancelado = true
     }
-  }, [user])
+  }, [user, catalogo, catalogoLoading, catalogoError])
 
   const base = useMemo(
     () => filtrarPorEscopo(ativos, tickersCarteira, escopo),

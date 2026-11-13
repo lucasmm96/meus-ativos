@@ -14,7 +14,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { neonFetch } from '../lib/neon'
 import { Card, SkeletonCard } from '../components'
-import { cachedFetch } from '../lib/cache'
+import { useAtivos } from '../hooks/useAtivos'
 import {
   PERIODOS,
   deveExibirAvisoCobertura,
@@ -118,6 +118,7 @@ export function AtivoHistorico() {
   const { ticker: tickerParam } = useParams<{ ticker: string }>()
   const ticker = (tickerParam ?? '').toUpperCase()
   const { user } = useAuth()
+  const { ativos: catalogo, loading: catalogoLoading, error: catalogoError } = useAtivos()
 
   const [dados, setDados] = useState<CotacaoAjustada[]>([])
   const [eventos, setEventos] = useState<EventoCorporativo[]>([])
@@ -133,13 +134,15 @@ export function AtivoHistorico() {
     async function load() {
       setLoading(true)
       setError('')
+      // Aguarda o catálogo compartilhado (useAtivos) antes de resolver o ticker.
+      if (catalogoLoading) return
+      if (catalogoError) {
+        setError(catalogoError)
+        setLoading(false)
+        return
+      }
       try {
-        const ativosCache = await cachedFetch<AtivoInfo[]>(
-          'ativos-catalog',
-          () => neonFetch('/ativos?select=ticker,nome,tipo,tickerCotacao,negociavel', user!.jwt),
-        )
-        if (cancelado) return
-        const ativoInfo = ativosCache.find((a) => a.ticker === ticker) ?? null
+        const ativoInfo = catalogo.find((a) => a.ticker === ticker) ?? null
         const tickerCotacao = ativoInfo?.tickerCotacao ?? ticker
         const isAlias = tickerCotacao !== ticker
 
@@ -169,7 +172,7 @@ export function AtivoHistorico() {
     return () => {
       cancelado = true
     }
-  }, [user, ticker])
+  }, [user, ticker, catalogo, catalogoLoading, catalogoError])
 
   const dadosFiltrados = useMemo(
     () => filtrarPorPeriodo(dados, periodo),

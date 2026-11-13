@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -7,12 +6,11 @@ import {
 import Decimal from 'decimal.js'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
-import { neonFetch, neonMutate } from '../lib/neon'
-import type { TransacaoRow, Transacao, TipoAtivo } from '../core/types'
+import { neonMutate } from '../lib/neon'
+import type { Transacao } from '../core/types'
 import {
   ajustarTransacoes,
   AVISO_PRE_2010,
-  type EventoAjuste,
 } from '../core/ajustarTransacoes'
 import { baixarCsvTransacoes } from '../core/exportCsv'
 import {
@@ -22,15 +20,7 @@ import {
   type ResultadoImportacao,
 } from '../core/importCsv'
 import { Button, Card, SkeletonCard } from '../components'
-import { cachedFetch } from '../lib/cache'
-
-interface Ativo {
-  ticker: string
-  tickerCotacao: string
-  tipo: TipoAtivo
-  nome: string
-  negociavel: boolean
-}
+import { useTransacoes } from '../hooks/useTransacoes'
 
 type FilterType = 'all' | 'ACAO' | 'FII' | 'archived'
 
@@ -59,13 +49,18 @@ function formatarValorImportado(valor: string): string {
 export function Transactions() {
   const { user } = useAuth()
 
-  const [transacoes, setTransacoes] = useState<Transacao[]>([])
-  const [eventos, setEventos] = useState<EventoAjuste[]>([])
-  const [ativos, setAtivos] = useState<Ativo[]>([])
-  const [archived, setArchived] = useState<Set<string>>(new Set())
+  const {
+    transacoes,
+    setTransacoes,
+    ativos,
+    arquivamentos: archived,
+    setArquivamentos: setArchived,
+    eventos,
+    loading,
+    error,
+    refetch,
+  } = useTransacoes()
   const [filter, setFilter] = useState<FilterType>('all')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
   // Form state
   const [showForm, setShowForm] = useState(false)
@@ -85,55 +80,6 @@ export function Transactions() {
   const [importFileError, setImportFileError] = useState('')
   const [importando, setImportando] = useState(false)
   const [importSucesso, setImportSucesso] = useState('')
-
-  async function fetchData() {
-    if (!user) return
-    try {
-      const [rows, ativosData, arquivamentos] = await Promise.all([
-        neonFetch<TransacaoRow[]>(`/transacoes?userId=eq.${user.id}&select=*&order=data.desc`, user.jwt),
-        cachedFetch<Ativo[]>(
-          'ativos-catalog',
-          () => neonFetch('/ativos?select=ticker,tickerCotacao,tipo,nome,negociavel', user.jwt),
-        ),
-        neonFetch<{ transacaoId: string }[]>(`/arquivamentos?userId=eq.${user.id}&select=transacaoId`, user.jwt),
-      ])
-      const ativosMap = Object.fromEntries(ativosData.map(a => [a.ticker, a]))
-      const txs: Transacao[] = rows.map(r => ({
-        ...r,
-        tickerCotacao: ativosMap[r.ativoTicker]?.tickerCotacao ?? r.ativoTicker,
-        tipo: ativosMap[r.ativoTicker]?.tipo ?? 'ACAO',
-      }))
-      setTransacoes(txs)
-      setAtivos(ativosData)
-      setArchived(new Set(arquivamentos.map(a => a.transacaoId)))
-
-      const tickersEventos = [
-        ...new Set(txs.flatMap(t =>
-          t.ativoTicker === t.tickerCotacao
-            ? [t.ativoTicker]
-            : [t.ativoTicker, t.tickerCotacao],
-        )),
-      ]
-      if (tickersEventos.length > 0) {
-        const eventosData = await neonFetch<EventoAjuste[]>(
-          `/eventos_corporativos?ticker=in.(${tickersEventos.join(',')})&tipo=in.(SPLIT,GRUPAMENTO,BONIFICACAO)&select=ticker,data_efetiva,fator_ajuste,tipo&order=data_efetiva.asc`,
-          user.jwt,
-        )
-        setEventos(eventosData)
-      } else {
-        setEventos([])
-      }
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
 
   async function handleDelete(id: string) {
     if (!user) return
@@ -219,7 +165,7 @@ export function Transactions() {
       setFormQty('')
       setFormAjustadaManualmente(false)
       setFormPre2010Ciente(false)
-      await fetchData()
+      await refetch()
     } catch (err) {
       setFormError(String(err))
     } finally {
@@ -299,7 +245,7 @@ export function Transactions() {
             : 'transações importadas'
         }.`,
       )
-      await fetchData()
+      await refetch()
     } catch (erro) {
       setImportFileError(String(erro))
     } finally {
